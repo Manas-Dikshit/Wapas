@@ -1,15 +1,25 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Phone, MessageCircle, Copy, PackageCheck, Truck as TruckIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { bookings } from '@/lib/mock-data';
-import { TrackingMap } from '@/components/tracking/map-placeholder';
 import { Timeline, type TimelineStep } from '@/components/tracking/timeline';
-import { Avatar, Progress } from '@/components/ui/primitives';
+import { Avatar, Progress, Skeleton } from '@/components/ui/primitives';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatINR } from '@/lib/utils';
+
+// Leaflet touches `window`/`document` as soon as it's imported, so the real
+// map must never run on the server — load it client-only.
+const LiveTrackingMap = dynamic(
+  () => import('@/components/tracking/real-map').then((m) => m.LiveTrackingMap),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[260px] w-full rounded-xl3 sm:h-[340px]" />
+  }
+);
 
 const baseSteps: Omit<TimelineStep, 'done' | 'active'>[] = [
   { label: 'Booking confirmed', time: 'Aug 3, 9:14 AM' },
@@ -22,6 +32,8 @@ const baseSteps: Omit<TimelineStep, 'done' | 'active'>[] = [
 export default function TrackingPage({ params }: { params: { id: string } }) {
   const booking = bookings.find((b) => b.id === params.id) ?? bookings[0];
   const [copied, setCopied] = useState(false);
+
+  const [originCity, destinationCity] = booking.route.split(' → ');
 
   const doneCount = booking.status === 'delivered' ? 5 : booking.status === 'in-transit' ? Math.ceil((booking.progressPct / 100) * 4) : 1;
   const steps: TimelineStep[] = baseSteps.map((s, i) => ({ ...s, done: i < doneCount, active: i === doneCount }));
@@ -47,7 +59,8 @@ export default function TrackingPage({ params }: { params: { id: string } }) {
         <p className="font-display text-xl font-extrabold text-navy-600">{formatINR(booking.amount)}</p>
       </div>
 
-      <TrackingMap progressPct={booking.progressPct} />
+      <LiveTrackingMap originCity={originCity} destinationCity={destinationCity} progressPct={booking.progressPct} />
+
 
       <div className="card-surface p-5 sm:p-6">
         <div className="flex items-center justify-between">
