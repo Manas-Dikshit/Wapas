@@ -24,7 +24,7 @@ export function Hero() {
         <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }}>
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-navy-100 bg-white px-4 py-1.5 text-xs font-bold text-navy-500 shadow-soft">
             <span className="h-1.5 w-1.5 rounded-full bg-aqua-400" />
-            Now live across 40+ Indian freight corridors
+            Started from my own freight, now in india
           </div>
           <h1 className="font-display text-[2.5rem] font-extrabold leading-[1.08] text-navy-600 sm:text-6xl">
             Every empty mile
