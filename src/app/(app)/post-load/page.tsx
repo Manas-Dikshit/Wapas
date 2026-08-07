@@ -1,0 +1,121 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { Loader2, Sparkles } from 'lucide-react';
+import { cities } from '@/lib/mock-data';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+
+const truckTypes = ['Open Body', 'Container', 'Trailer', 'Refrigerated', 'Tanker', 'Mini Truck'];
+const categories = ['Textiles', 'FMCG', 'Perishables', 'Automotive', 'Construction', 'Agri-commodities', 'Pharma', 'Electronics'];
+
+export default function PostLoadPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    title: '',
+    category: categories[0],
+    weight: '',
+    origin: cities[0],
+    destination: cities[1],
+    pickupDate: '',
+    budget: '',
+    truckType: truckTypes[0]
+  });
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      toast.success('Load posted', { description: 'We\'re matching it with nearby transporters now.' });
+      router.push('/marketplace');
+    }, 1000);
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-6 pb-6 animate-fade-up">
+      <div>
+        <h1 className="font-display text-2xl font-extrabold text-navy-600 sm:text-3xl">Post a load</h1>
+        <p className="mt-1 text-sm text-navy-400">Fill in the details and get matched with verified transporters in minutes.</p>
+      </div>
+
+      <form onSubmit={submit} className="card-surface space-y-5 p-5 sm:p-6">
+        <Field label="Load title">
+          <Input required placeholder="e.g. Textile Rolls — 400 Bales" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+        </Field>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Category">
+            <select className="h-12 w-full rounded-2xl border border-navy-100 bg-white px-4 text-sm text-navy-700 focus:border-blue-400" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+              {categories.map((c) => <option key={c}>{c}</option>)}
+            </select>
+          </Field>
+          <Field label="Weight (tons)">
+            <Input required type="number" min={0.5} step={0.5} placeholder="10" value={form.weight} onChange={(e) => setForm({ ...form, weight: e.target.value })} />
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Origin city">
+            <select className="h-12 w-full rounded-2xl border border-navy-100 bg-white px-4 text-sm text-navy-700 focus:border-blue-400" value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value })}>
+              {cities.map((c) => <option key={c}>{c}</option>)}
+            </select>
+          </Field>
+          <Field label="Destination city">
+            <select className="h-12 w-full rounded-2xl border border-navy-100 bg-white px-4 text-sm text-navy-700 focus:border-blue-400" value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })}>
+              {cities.map((c) => <option key={c}>{c}</option>)}
+            </select>
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Pickup date">
+            <Input required type="date" value={form.pickupDate} onChange={(e) => setForm({ ...form, pickupDate: e.target.value })} />
+          </Field>
+          <Field label="Budget (₹)">
+            <Input required type="number" min={500} placeholder="21500" value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} />
+          </Field>
+        </div>
+
+        <Field label="Truck type needed">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {truckTypes.map((t) => (
+              <button
+                type="button"
+                key={t}
+                onClick={() => setForm({ ...form, truckType: t })}
+                className={`rounded-xl border px-2 py-2.5 text-[11px] font-bold transition-colors ${
+                  form.truckType === t ? 'border-blue-400 bg-blue-50 text-blue-600' : 'border-navy-100 text-navy-400 hover:border-navy-200'
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </Field>
+
+        <div className="flex items-start gap-3 rounded-2xl bg-blue-50 p-4">
+          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
+          <p className="text-xs text-blue-700">Our AI will automatically match this load with the best-fit backhaul trucks and notify you as matches come in.</p>
+        </div>
+
+        <Button type="submit" className="w-full" size="lg" disabled={loading}>
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {loading ? 'Posting load…' : 'Post load'}
+        </Button>
+      </form>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs font-bold text-navy-500">{label}</label>
+      {children}
+    </div>
+  );
+}
