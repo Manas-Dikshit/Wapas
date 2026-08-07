@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-display: 'Plus Jakarta Sans', sans-serif;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  * {
+    @apply border-navy-100;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-canvas text-navy-700 font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5 {
+    @apply font-display text-navy-600;
+  }
+
+  /* Visible keyboard focus everywhere */
+  :focus-visible {
+    outline: 2px solid #4A7FCE;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: #69C8D4;
+    color: #262D53;
+  }
+
+  /* Slim premium scrollbars */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #D6D8E9; border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #AEB2D3; }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/60;
+  }
+
+  .card-surface {
+    @apply bg-white rounded-xl3 border border-navy-100/70 shadow-soft;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden bg-navy-100/60 rounded-lg;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent);
+    background-size: 700px 100%;
+    animation: shimmer 1.6s infinite linear;
+  }
+
+  .container-app {
+    @apply mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-10;
+  }
+
+  .btn-gradient {
+    @apply bg-wapas-gradient text-white shadow-glow hover:brightness-[1.06] active:brightness-95 transition-all duration-200;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
