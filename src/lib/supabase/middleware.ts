@@ -1,4 +1,5 @@
-import { createServerClient } from '@supabase/ssr';
+// src/lib/supabase/middleware.ts
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 /**
@@ -19,12 +20,15 @@ export async function updateSession(request: NextRequest) {
       get(name: string) {
         return request.cookies.get(name)?.value;
       },
-      set(name: string, value: string, options) {
+      set(name: string, value: string, options: CookieOptions) {
+        // Update the request cookies so the *current* request's
+        // server-client calls (later in this same middleware run) see the
+        // refreshed session too, then mirror it onto the response.
         request.cookies.set({ name, value, ...options });
         response = NextResponse.next({ request: { headers: request.headers } });
         response.cookies.set({ name, value, ...options });
       },
-      remove(name: string, options) {
+      remove(name: string, options: CookieOptions) {
         request.cookies.set({ name, value: '', ...options });
         response = NextResponse.next({ request: { headers: request.headers } });
         response.cookies.set({ name, value: '', ...options });
