@@ -87,13 +87,6 @@ export default function LoginPage() {
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             Continue with email
           </Button>
-          <div className="relative py-2 text-center text-xs text-navy-300">
-            <span className="relative z-10 bg-canvas px-3">or continue with</span>
-            <div className="absolute left-0 right-0 top-1/2 h-px bg-navy-100" />
-          </div>
-          <Button type="button" variant="outline" className="w-full" onClick={loginWithGoogle}>
-            Continue with Google
-          </Button>
         </form>
       ) : (
         <form onSubmit={verifyOtp} className="space-y-4">
