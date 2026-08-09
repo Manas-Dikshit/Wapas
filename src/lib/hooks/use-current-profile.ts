@@ -39,7 +39,21 @@ export function useCurrentProfile() {
         .from('profiles')
         .select('*')
         .eq('auth_user_id', user.id)
-        .maybeSingle();
+        .maybeSingle() as {
+        data: {
+          id: string;
+          full_name: string;
+          company_name: string | null;
+          role: 'shipper' | 'transporter' | 'admin';
+          city: string | null;
+          rating: number;
+          verified: boolean;
+          gst_number: string | null;
+          kyc_status: 'pending' | 'verified' | 'rejected';
+          created_at: string;
+        } | null;
+        error: { message: string } | null;
+      };
 
       // Auth session exists, but no linked profile row yet (0004 trigger
       // hasn't run, or the user predates it). Treat as "no profile" — never
