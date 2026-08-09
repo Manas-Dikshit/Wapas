@@ -8,6 +8,8 @@ export type Database = {
       profiles: {
         Row: {
           id: string;
+          auth_user_id: string | null;
+          email: string | null;
           full_name: string;
           company_name: string | null;
           role: 'shipper' | 'transporter' | 'admin';
@@ -21,12 +23,12 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['profiles']['Row']> & { id: string; full_name: string; role: 'shipper' | 'transporter' | 'admin' };
         Update: Partial<Database['public']['Tables']['profiles']['Row']>;
+        Relationships: [];
       };
       trucks: {
         Row: {
           id: string;
           transporter_id: string;
-          reg_number: string;
           type: string;
           capacity_tons: number;
           current_city: string;
