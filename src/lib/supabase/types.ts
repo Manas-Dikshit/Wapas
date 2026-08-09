@@ -42,6 +42,7 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['trucks']['Row']> & { transporter_id: string; reg_number: string; type: string; capacity_tons: number; current_city: string; price_per_ton: number };
         Update: Partial<Database['public']['Tables']['trucks']['Row']>;
+        Relationships: [];
       };
       loads: {
         Row: {
