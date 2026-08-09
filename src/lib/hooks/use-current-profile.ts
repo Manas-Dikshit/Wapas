@@ -18,13 +18,14 @@ export function useCurrentProfile() {
 
   useEffect(() => {
     if (!supabase) return;
+    const client = supabase;
     let active = true;
 
     async function load() {
       const {
         data: { user },
         error: sessionError
-      } = await supabase.auth.getUser();
+      } = await client.auth.getUser();
 
       if (sessionError || !user) {
         if (active) {
@@ -34,7 +35,7 @@ export function useCurrentProfile() {
         return;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from('profiles')
         .select('*')
         .eq('auth_user_id', user.id)
