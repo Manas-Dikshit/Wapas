@@ -62,6 +62,7 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['loads']['Row']> & { shipper_id: string; title: string; weight_tons: number; origin_city: string; destination_city: string; pickup_date: string; budget: number };
         Update: Partial<Database['public']['Tables']['loads']['Row']>;
+        Relationships: [];
       };
       bookings: {
         Row: {
@@ -80,6 +81,7 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['bookings']['Row']> & { load_id: string; truck_id: string; shipper_id: string; transporter_id: string; amount: number };
         Update: Partial<Database['public']['Tables']['bookings']['Row']>;
+        Relationships: [];
       };
       transactions: {
         Row: {
@@ -95,6 +97,7 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['transactions']['Row']> & { user_id: string; type: 'credit' | 'debit'; label: string; amount: number };
         Update: Partial<Database['public']['Tables']['transactions']['Row']>;
+        Relationships: [];
       };
       notifications: {
         Row: {
