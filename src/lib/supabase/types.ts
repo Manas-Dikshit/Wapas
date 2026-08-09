@@ -29,6 +29,7 @@ export type Database = {
         Row: {
           id: string;
           transporter_id: string;
+          reg_number: string;
           type: string;
           capacity_tons: number;
           current_city: string;
