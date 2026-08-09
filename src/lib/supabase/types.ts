@@ -111,6 +111,7 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['notifications']['Row']> & { user_id: string; title: string };
         Update: Partial<Database['public']['Tables']['notifications']['Row']>;
+        Relationships: [];
       };
       tracking_events: {
         Row: {
@@ -124,7 +125,12 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['tracking_events']['Row']> & { booking_id: string; status_label: string };
         Update: Partial<Database['public']['Tables']['tracking_events']['Row']>;
+        Relationships: [];
       };
     };
+    Views: Record<string, { Row: Record<string, unknown>; Relationships: [] }>;
+    Functions: Record<string, unknown>;
+    Enums: Record<string, unknown>;
+    CompositeTypes: Record<string, unknown>;
   };
 };
