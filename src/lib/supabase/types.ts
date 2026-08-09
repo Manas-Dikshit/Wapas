@@ -8,8 +8,6 @@ export type Database = {
       profiles: {
         Row: {
           id: string;
-          auth_user_id: string | null;
-          email: string | null;
           full_name: string;
           company_name: string | null;
           role: 'shipper' | 'transporter' | 'admin';
@@ -23,7 +21,6 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['profiles']['Row']> & { id: string; full_name: string; role: 'shipper' | 'transporter' | 'admin' };
         Update: Partial<Database['public']['Tables']['profiles']['Row']>;
-        Relationships: [];
       };
       trucks: {
         Row: {
@@ -42,7 +39,6 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['trucks']['Row']> & { transporter_id: string; reg_number: string; type: string; capacity_tons: number; current_city: string; price_per_ton: number };
         Update: Partial<Database['public']['Tables']['trucks']['Row']>;
-        Relationships: [];
       };
       loads: {
         Row: {
@@ -62,7 +58,6 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['loads']['Row']> & { shipper_id: string; title: string; weight_tons: number; origin_city: string; destination_city: string; pickup_date: string; budget: number };
         Update: Partial<Database['public']['Tables']['loads']['Row']>;
-        Relationships: [];
       };
       bookings: {
         Row: {
@@ -81,7 +76,6 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['bookings']['Row']> & { load_id: string; truck_id: string; shipper_id: string; transporter_id: string; amount: number };
         Update: Partial<Database['public']['Tables']['bookings']['Row']>;
-        Relationships: [];
       };
       transactions: {
         Row: {
@@ -97,7 +91,6 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['transactions']['Row']> & { user_id: string; type: 'credit' | 'debit'; label: string; amount: number };
         Update: Partial<Database['public']['Tables']['transactions']['Row']>;
-        Relationships: [];
       };
       notifications: {
         Row: {
@@ -111,7 +104,6 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['notifications']['Row']> & { user_id: string; title: string };
         Update: Partial<Database['public']['Tables']['notifications']['Row']>;
-        Relationships: [];
       };
       tracking_events: {
         Row: {
@@ -125,12 +117,7 @@ export type Database = {
         };
         Insert: Partial<Database['public']['Tables']['tracking_events']['Row']> & { booking_id: string; status_label: string };
         Update: Partial<Database['public']['Tables']['tracking_events']['Row']>;
-        Relationships: [];
       };
     };
-    Views: Record<string, { Row: Record<string, unknown>; Relationships: [] }>;
-    Functions: Record<string, unknown>;
-    Enums: Record<string, unknown>;
-    CompositeTypes: Record<string, unknown>;
   };
 };

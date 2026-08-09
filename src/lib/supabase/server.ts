@@ -1,6 +1,5 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import type { Database } from './types';
 
 /**
  * Server-side Supabase client for Server Components, Route Handlers and
@@ -15,7 +14,7 @@ export function createServerSupabaseClient() {
 
   const cookieStore = cookies();
 
-  return createServerClient<Database>(url, anonKey, {
+  return createServerClient(url, anonKey, {
     cookies: {
       get(name: string) {
         return cookieStore.get(name)?.value;
