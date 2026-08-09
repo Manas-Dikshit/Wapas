@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { BadgeCheck, Camera, FileText, LogOut, Star, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { currentProfile } from '@/lib/mock-data';
-import { Avatar, Tabs } from '@/components/ui/primitives';
+import { useCurrentProfile } from '@/lib/hooks/use-current-profile';
+import { createClient } from '@/lib/supabase/client';
+import { Avatar, Skeleton, Tabs } from '@/components/ui/primitives';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,36 +21,101 @@ const documents = [
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [tab, setTab] = useState('profile');
-  const [form, setForm] = useState({ name: currentProfile.fullName, company: currentProfile.companyName, gst: currentProfile.gstNumber ?? '', city: currentProfile.city });
+  const supabase = createClient();
+  const { profile, loading } = useCurrentProfile();
 
-  function save(e: React.FormEvent) {
+  const [tab, setTab] = useState('profile');
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ name: '', company: '', gst: '', city: '' });
+
+  // Keep the edit form in sync once the real (or mock) profile resolves.
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        name: profile.fullName,
+        company: profile.companyName,
+        gst: profile.gstNumber ?? '',
+        city: profile.city
+      });
+    }
+  }, [profile]);
+
+  async function save(e: React.FormEvent) {
     e.preventDefault();
+    if (!profile) return;
+
+    if (!supabase) {
+      // Demo mode — nothing to persist, but keep the UX consistent.
+      toast.success('Profile updated');
+      return;
+    }
+
+    setSaving(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ full_name: form.name, company_name: form.company, gst_number: form.gst, city: form.city })
+      .eq('id', profile.id);
+    setSaving(false);
+
+    if (error) {
+      toast.error("Couldn't save changes", { description: error.message });
+      return;
+    }
     toast.success('Profile updated');
+  }
+
+  async function logOut() {
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+    toast.success('Signed out');
+    router.push('/login');
+    router.refresh();
+  }
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 pb-6">
+        <Skeleton className="h-32 w-full rounded-xl3" />
+        <Skeleton className="h-64 w-full rounded-xl3" />
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-4 py-20 text-center">
+        <p className="font-display text-lg font-bold text-navy-600">You&apos;re not signed in</p>
+        <p className="text-sm text-navy-400">Log in to view and edit your profile.</p>
+        <Button onClick={() => router.push('/login')}>Go to login</Button>
+      </div>
+    );
   }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 pb-6 animate-fade-up">
       <div className="card-surface flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:text-left">
         <div className="relative">
-          <Avatar name={currentProfile.fullName} className="h-20 w-20 text-xl" />
+          <Avatar name={profile.fullName} className="h-20 w-20 text-xl" />
           <button className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-navy-600 text-white shadow-soft">
             <Camera className="h-3.5 w-3.5" />
           </button>
         </div>
         <div className="flex-1">
           <div className="flex items-center justify-center gap-1.5 sm:justify-start">
-            <p className="font-display text-lg font-bold text-navy-600">{currentProfile.fullName}</p>
-            {currentProfile.verified && <BadgeCheck className="h-4 w-4 text-blue-500" />}
+            <p className="font-display text-lg font-bold text-navy-600">{profile.fullName}</p>
+            {profile.verified && <BadgeCheck className="h-4 w-4 text-blue-500" />}
           </div>
-          <p className="text-sm text-navy-400">{currentProfile.companyName}</p>
+          <p className="text-sm text-navy-400">{profile.companyName || 'No company set'}</p>
           <div className="mt-2 flex items-center justify-center gap-3 text-xs text-navy-400 sm:justify-start">
-            <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {currentProfile.rating}</span>
-            <span>{currentProfile.city}</span>
-            <span>Member since {currentProfile.memberSince}</span>
+            <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {profile.rating}</span>
+            <span>{profile.city || 'City not set'}</span>
+            <span>Member since {profile.memberSince}</span>
           </div>
         </div>
-        <Badge variant="success">KYC {currentProfile.kycStatus}</Badge>
+        <Badge variant={profile.kycStatus === 'verified' ? 'success' : profile.kycStatus === 'pending' ? 'warning' : 'danger'}>
+          KYC {profile.kycStatus}
+        </Badge>
       </div>
 
       <Tabs
@@ -76,7 +142,9 @@ export default function ProfilePage() {
           <Field label="City">
             <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
           </Field>
-          <Button type="submit">Save changes</Button>
+          <Button type="submit" disabled={saving}>
+            {saving ? 'Saving…' : 'Save changes'}
+          </Button>
         </form>
       )}
 
@@ -108,7 +176,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <Button variant="destructive" className="w-full" onClick={() => { toast.success('Signed out'); router.push('/login'); }}>
+      <Button variant="destructive" className="w-full" onClick={logOut}>
         <LogOut className="h-4 w-4" /> Log out
       </Button>
     </div>
