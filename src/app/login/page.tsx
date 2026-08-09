@@ -2,110 +2,124 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Loader2, Mail } from 'lucide-react';
+import { Loader2, Package, Truck, Check, MailCheck } from 'lucide-react';
 import { AuthShell } from '@/components/layout/auth-shell';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 
-export default function LoginPage() {
-  const router = useRouter();
+type Role = 'shipper' | 'transporter';
+
+const roles: { key: Role; title: string; desc: string; icon: React.ElementType }[] = [
+  { key: 'transporter', title: 'I own or manage trucks', desc: 'List your fleet and get matched loads for backhaul trips.', icon: Truck },
+  { key: 'shipper', title: 'I need to ship goods', desc: 'Post loads and book verified trucks in minutes.', icon: Package }
+];
+
+export default function RegisterPage() {
   const supabase = createClient();
-  const [step, setStep] = useState<'email' | 'otp'>('email');
+  const [role, setRole] = useState<Role | null>(null);
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
+  const [sent, setSent] = useState(false);
+  const [form, setForm] = useState({ name: '', company: '', email: '', phone: '', city: '' });
 
-  async function sendOtp(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email) return;
+    if (!role) return;
 
     if (!supabase) {
-      toast.error("Supabase isn't configured", { description: 'Add NEXT_PUBLIC_SUPABASE_URL / ANON_KEY to .env.local to enable real login.' });
+      toast.error("Supabase isn't configured", { description: 'Add your Supabase project keys to enable real sign-up.' });
       return;
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    setLoading(false);
-
-    if (error) {
-      toast.error("Couldn't send code", { description: error.message });
-      return;
-    }
-
-    setStep('otp');
-    toast.success('Check your inbox', { description: `We sent a 6-digit code to ${email}.` });
-  }
-
-  async function verifyOtp(e: React.FormEvent) {
-    e.preventDefault();
-    if (!supabase) return;
-
-    setLoading(true);
-    const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'email' });
-    setLoading(false);
-
-    if (error) {
-      toast.error('Invalid or expired code', { description: error.message });
-      return;
-    }
-
-    toast.success('Welcome back to Wapas');
-    router.push('/dashboard');
-    router.refresh();
-  }
-
-  async function loginWithGoogle() {
-    if (!supabase) {
-      toast.error("Supabase isn't configured", { description: 'Add your Supabase project keys to enable Google login.' });
-      return;
-    }
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/dashboard` }
+    // signInWithOtp creates the auth.users row on first use. `data` becomes
+    // raw_user_meta_data, which handle_new_user() (0004_link_auth_users.sql)
+    // reads to populate the profiles row once the link is confirmed.
+    const { error } = await supabase.auth.signInWithOtp({
+      email: form.email,
+      options: {
+        data: { full_name: form.name, company_name: form.company, role, city: form.city },
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
+      }
     });
+    setLoading(false);
 
-    if (error) toast.error('Google sign-in failed', { description: error.message });
+    if (error) {
+      toast.error("Couldn't send verification link", { description: error.message });
+      return;
+    }
+
+    setSent(true);
+    toast.success('Verification link sent', { description: `Check ${form.email} to finish creating your account.` });
+  }
+
+  if (sent) {
+    return (
+      <AuthShell title="Check your email" subtitle="One more step to activate your account.">
+        <div className="flex flex-col items-center gap-4 rounded-2xl border border-navy-100 bg-white p-6 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-500">
+            <MailCheck className="h-6 w-6" />
+          </div>
+          <p className="text-sm font-bold text-navy-600">Link sent to {form.email}</p>
+          <p className="text-xs text-navy-400">
+            Open it on <span className="font-semibold">this same device/browser</span> — your account and profile will be created automatically.
+          </p>
+          <button className="text-xs font-semibold text-blue-500" onClick={() => setSent(false)}>
+            Use a different email
+          </button>
+        </div>
+      </AuthShell>
+    );
   }
 
   return (
-    <AuthShell title="Welcome back" subtitle="Log in to manage your trucks, loads and bookings.">
-      {step === 'email' ? (
-        <form onSubmit={sendOtp} className="space-y-4">
-          <div>
-            <label className="mb-1.5 block text-xs font-bold text-navy-500">Email address</label>
-            <div className="relative">
-              <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
-              <Input type="email" required placeholder="you@company.com" className="pl-11" value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-          </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            Continue with email
-          </Button>
-        </form>
-      ) : (
-        <form onSubmit={verifyOtp} className="space-y-4">
-          <div>
-            <label className="mb-1.5 block text-xs font-bold text-navy-500">Enter the 6-digit code</label>
-            <Input required maxLength={6} placeholder="123456" value={otp} onChange={(e) => setOtp(e.target.value)} className="text-center text-lg tracking-[0.5em]" />
-            <p className="mt-2 text-xs text-navy-300">Sent to {email}. <button type="button" className="font-semibold text-blue-500" onClick={() => setStep('email')}>Change</button></p>
-          </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            Verify & continue
-          </Button>
-        </form>
-      )}
+    <AuthShell title="Create your account" subtitle="Set up your Wapas profile in under two minutes.">
+      <div className="mb-6 space-y-3">
+        {roles.map((r) => {
+          const active = role === r.key;
+          return (
+            <button
+              key={r.key}
+              type="button"
+              onClick={() => setRole(r.key)}
+              className={cn(
+                'flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-colors',
+                active ? 'border-blue-400 bg-blue-50' : 'border-navy-100 bg-white hover:border-navy-200'
+              )}
+            >
+              <div className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl', active ? 'bg-wapas-gradient text-white' : 'bg-navy-50 text-navy-400')}>
+                <r.icon className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-navy-600">{r.title}</p>
+                <p className="text-xs text-navy-400">{r.desc}</p>
+              </div>
+              <div className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2', active ? 'border-blue-500 bg-blue-500 text-white' : 'border-navy-200')}>
+                {active && <Check className="h-3 w-3" />}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <form onSubmit={submit} className="space-y-3">
+        <Input required placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <Input required placeholder="Company name" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+        <Input required type="email" placeholder="Work email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+        <Input required type="tel" placeholder="Phone number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+        <Input placeholder="City" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+        <Button type="submit" className="w-full" disabled={!role || loading}>
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          Send verification link
+        </Button>
+      </form>
 
       <p className="mt-6 text-center text-sm text-navy-400">
-        New to Wapas?{' '}
-        <Link href="/register" className="font-bold text-blue-500">
-          Create an account
+        Already have an account?{' '}
+        <Link href="/login" className="font-bold text-blue-500">
+          Log in
         </Link>
       </p>
     </AuthShell>
