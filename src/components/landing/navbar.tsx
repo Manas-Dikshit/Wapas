@@ -37,7 +37,7 @@ export function SiteNavbar() {
             Log in
           </Link>
           <Link href="/register" className={cn(buttonVariants({ size: 'sm' }))}>
-            Get started free
+            Sign up
           </Link>
         </div>
 
@@ -60,7 +60,7 @@ export function SiteNavbar() {
               Log in
             </Link>
             <Link href="/register" className={cn(buttonVariants(), 'flex-1')}>
-              Get started
+              Sign up
             </Link>
           </div>
         </div>
