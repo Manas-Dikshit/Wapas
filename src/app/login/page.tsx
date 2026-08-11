@@ -9,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 
+// When Supabase can't find a user for the submitted email, it returns an
+// error phrased around signup/OTP being disallowed. Match those markers so we
+// can steer the visitor to /register instead of a generic failure toast.
+function isSignupRequired(message: string) {
+  return /signup|not found|no user|not allowed|no account|don'?t have an account/i.test(message);
+}
+
 export default function LoginPage() {
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
