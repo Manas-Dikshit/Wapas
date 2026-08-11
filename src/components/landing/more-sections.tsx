@@ -161,7 +161,7 @@ export function CTA() {
           <p className="relative mx-auto mt-4 max-w-xl text-white/75">Join thousands of transporters and shippers already moving freight smarter on Wapas.</p>
           <div className="relative mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link href="/register" className={cn(buttonVariants({ size: 'lg' }), 'bg-white text-navy-600 hover:bg-white/90 shadow-none')}>
-              Create free account
+              Sign up
             </Link>
             <Link href="/login" className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'border-white/30 bg-transparent text-white hover:bg-white/10')}>
               Explore the demo

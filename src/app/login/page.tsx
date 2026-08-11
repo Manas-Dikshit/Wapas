@@ -9,6 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 
+// When Supabase can't find a user for the submitted email, it returns an
+// error phrased around signup/OTP being disallowed. Match those markers so we
+// can steer the visitor to /register instead of a generic failure toast.
+function isSignupRequired(message: string) {
+  return /signup|not found|no user|not allowed|no account|don'?t have an account/i.test(message);
+}
+
 export default function LoginPage() {
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
@@ -32,13 +39,23 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
+        // Signup is gated behind /register: never silently auto-register an
+        // unknown email that shows up here. Non-registered addresses should
+        // get a clear "sign up instead" message (handled below).
+        shouldCreateUser: false,
         emailRedirectTo: `${window.location.origin}/auth/callback?next=${next}`
       }
     });
     setLoading(false);
 
     if (error) {
-      toast.error("Couldn't send sign-in link", { description: error.message });
+      if (isSignupRequired(error.message)) {
+        toast.error('Account not found', {
+          description: `No Wapas account uses ${email}. Please sign up to create one.`
+        });
+      } else {
+        toast.error("Couldn't send sign-in link", { description: error.message });
+      }
       return;
     }
 
