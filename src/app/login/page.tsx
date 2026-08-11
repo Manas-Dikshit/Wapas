@@ -39,13 +39,23 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
+        // Signup is gated behind /register: never silently auto-register an
+        // unknown email that shows up here. Non-registered addresses should
+        // get a clear "sign up instead" message (handled below).
+        shouldCreateUser: false,
         emailRedirectTo: `${window.location.origin}/auth/callback?next=${next}`
       }
     });
     setLoading(false);
 
     if (error) {
-      toast.error("Couldn't send sign-in link", { description: error.message });
+      if (isSignupRequired(error.message)) {
+        toast.error('Account not found', {
+          description: `No Wapas account uses ${email}. Please sign up to create one.`
+        });
+      } else {
+        toast.error("Couldn't send sign-in link", { description: error.message });
+      }
       return;
     }
 

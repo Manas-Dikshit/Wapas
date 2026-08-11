@@ -39,12 +39,16 @@ export default function RegisterPage() {
     const next = new URLSearchParams(window.location.search).get('next') ?? '/dashboard';
 
     setLoading(true);
-    // signInWithOtp creates the auth.users row on first use. `data` becomes
-    // raw_user_meta_data, which handle_new_user() (0004_link_auth_users.sql)
-    // reads to populate the profiles row once the link is confirmed.
+    // signInWithOtp creates the auth.users row on first use. `shouldCreateUser`
+    // is set explicitly (true) so account creation here is intentional and
+    // unambiguous — unlike login, which is gated to existing users only.
+    // `data` becomes raw_user_meta_data, which handle_new_user()
+    // (0004_link_auth_users.sql) reads to populate the profiles row once the
+    // link is confirmed.
     const { error } = await supabase.auth.signInWithOtp({
       email: form.email,
       options: {
+        shouldCreateUser: true,
         data: { full_name: form.name, company_name: form.company, role, city: form.city },
         emailRedirectTo: `${window.location.origin}/auth/callback?next=${next}`
       }
