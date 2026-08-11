@@ -39,8 +39,12 @@ export function Hero() {
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <Link href="/register" className={cn(buttonVariants({ size: 'lg' }), 'group')}>
-              Get started free
+              Sign up
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link href="/login" className={cn(buttonVariants({ variant: 'outline', size: 'lg' }))}>
+              View live demo
+            </Link>
           </div>
           <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-navy-400">
             <Stat value="6,900+" label="trucks on the network" />
