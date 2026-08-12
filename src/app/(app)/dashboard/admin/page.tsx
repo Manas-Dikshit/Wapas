@@ -62,6 +62,7 @@ export default function AdminDashboardPage() {
   }, [unauthorized, router]);
 
   useEffect(() => {
+    if (unauthorized) return;
     if (!isAuthEnabled) {
       setLoading(false);
       return;
@@ -166,7 +167,7 @@ export default function AdminDashboardPage() {
             <h3 className="font-display text-base font-bold text-navy-600">User management</h3>
           </div>
           <div className="relative">
-            <Users className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-300" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
