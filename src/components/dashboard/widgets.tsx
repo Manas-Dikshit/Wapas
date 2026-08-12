@@ -52,7 +52,8 @@ export function RecentBookings({ bookings: items = bookings }: { bookings?: Rece
             </div>
           </Link>
         ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
