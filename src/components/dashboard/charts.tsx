@@ -6,11 +6,13 @@ import { formatCompactINR } from '@/lib/utils';
 
 const PIE_COLORS = ['#4A7FCE', '#69C8D4', '#8DA9E0', '#262D53'];
 
-export function RevenueChart() {
+export type RevenuePoint = { month: string; revenue: number };
+
+export function RevenueChart({ data = revenueSeries }: { data?: RevenuePoint[] }) {
   return (
     <div className="h-[260px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={revenueSeries} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}>
           <defs>
             <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#4A7FCE" stopOpacity={0.35} />
@@ -31,14 +33,16 @@ export function RevenueChart() {
   );
 }
 
-export function UtilizationChart() {
+export type UtilizationPoint = { name: string; value: number };
+
+export function UtilizationChart({ data = utilizationSeries }: { data?: UtilizationPoint[] }) {
   return (
     <div className="flex items-center gap-6">
       <div className="h-[160px] w-[160px] shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={utilizationSeries} dataKey="value" nameKey="name" innerRadius={48} outerRadius={72} paddingAngle={3} strokeWidth={0}>
-              {utilizationSeries.map((_, i) => (
+            <Pie data={data} dataKey="value" nameKey="name" innerRadius={48} outerRadius={72} paddingAngle={3} strokeWidth={0}>
+              {data.map((_, i) => (
                 <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
               ))}
             </Pie>
@@ -47,7 +51,7 @@ export function UtilizationChart() {
         </ResponsiveContainer>
       </div>
       <div className="space-y-2.5">
-        {utilizationSeries.map((s, i) => (
+        {data.map((s, i) => (
           <div key={s.name} className="flex items-center gap-2 text-sm">
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
             <span className="text-navy-500">{s.name}</span>
