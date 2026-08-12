@@ -87,24 +87,30 @@ export function AiRecommendations({ loads: items = mockRecommendations }: { load
         </div>
         <h3 className="font-display text-base font-bold text-navy-600">AI recommended loads</h3>
       </div>
-      <div className="space-y-3 px-5 pb-5 sm:px-6 sm:pb-6">
-        {items.slice(0, 3).map((l) => (
-          <Link
-            key={l.id}
-            href={`/marketplace/${l.id}`}
-            className="flex items-center justify-between rounded-2xl border border-navy-100 p-3.5 transition-colors hover:border-blue-300 hover:bg-blue-50/50"
-          >
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-navy-600">{l.title}</p>
-              <p className="text-xs text-navy-400">{l.originCity} → {l.destinationCity} · {l.weightTons}T</p>
-            </div>
-            <div className="text-right">
-              <p className="font-display text-sm font-extrabold text-blue-500">{l.matchScore}%</p>
-              <p className="text-[10px] text-navy-300">match</p>
-            </div>
-          </Link>
-        ))}
-      </div>
+      {items.length === 0 ? (
+        <p className="mx-5 mb-5 rounded-2xl border border-dashed border-navy-200 p-5 text-center text-sm text-navy-400 sm:mx-6 sm:mb-6">
+          No matching loads right now. Backhaul loads that fit your fleet will show up here as they&apos;re posted.
+        </p>
+      ) : (
+        <div className="space-y-3 px-5 pb-5 sm:px-6 sm:pb-6">
+          {items.slice(0, 3).map((l) => (
+            <Link
+              key={l.id}
+              href={`/marketplace/${l.id}`}
+              className="flex items-center justify-between rounded-2xl border border-navy-100 p-3.5 transition-colors hover:border-blue-300 hover:bg-blue-50/50"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-navy-600">{l.title}</p>
+                <p className="text-xs text-navy-400">{l.originCity} → {l.destinationCity} · {l.weightTons}T</p>
+              </div>
+              <div className="text-right">
+                <p className="font-display text-sm font-extrabold text-blue-500">{l.matchScore}%</p>
+                <p className="text-[10px] text-navy-300">match</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
