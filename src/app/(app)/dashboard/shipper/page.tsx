@@ -86,39 +86,45 @@ export default function ShipperDashboardPage() {
       setLoading(false);
       return;
     }
+    const sb = supabase;
 
     let active = true;
     const shipperId = profile.id;
 
     async function load() {
       const [loadsRes, bookingsRes, txnRes, savedRes] = await Promise.all([
-        supabase
+        sb
           .from('loads')
           .select('id, title, category, weight_tons, origin_city, destination_city, pickup_date, budget, truck_type_needed, status, created_at')
           .eq('shipper_id', shipperId)
-          .order('created_at', { ascending: false }) as Promise<{ data: LoadRow[] | null; error: unknown }>,
-        supabase
+          .order('created_at', { ascending: false })
+          .then((res) => res as unknown as { data: LoadRow[] | null; error: unknown }),
+        sb
           .from('bookings')
           .select('id, load_id, amount, status, progress_pct, driver_name, eta, created_at, loads(title, origin_city, destination_city)')
           .eq('shipper_id', shipperId)
-          .order('created_at', { ascending: false }) as Promise<{ data: BookingRow[] | null; error: unknown }>,
-        supabase
+          .order('created_at', { ascending: false })
+          .then((res) => res as unknown as { data: BookingRow[] | null; error: unknown }),
+        sb
           .from('transactions')
           .select('id, type, amount, created_at')
-          .eq('user_id', shipperId) as Promise<{ data: TxnRow[] | null; error: unknown }>,
-        supabase
+          .eq('user_id', shipperId)
+          .then((res) => res as unknown as { data: TxnRow[] | null; error: unknown }),
+        sb
           .from('saved_transporters')
           .select('transporter_id')
-          .eq('shipper_id', shipperId) as Promise<{ data: { transporter_id: string }[] | null; error: unknown }>
+          .eq('shipper_id', shipperId)
+          .then((res) => res as unknown as { data: { transporter_id: string }[] | null; error: unknown })
       ]);
 
       const savedIds = savedRes.data?.map((r) => r.transporter_id) ?? [];
       let savedTransportersData: SavedTransporter[] = [];
       if (savedIds.length > 0) {
-        const profRes = await supabase
+        const profRes = await sb
           .from('profiles')
           .select('id, full_name, company_name, city, rating')
-          .in('id', savedIds) as Promise<{ data: SavedTransporter[] | null; error: unknown }>;
+          .in('id', savedIds)
+          .then((res) => res as unknown as { data: SavedTransporter[] | null; error: unknown });
         savedTransportersData = profRes.data ?? [];
       }
 
