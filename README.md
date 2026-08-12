@@ -84,37 +84,51 @@ npm run typecheck    # tsc --noEmit
 ```mermaid
 flowchart TB
     subgraph Client["Client Browser"]
-        UI["Next.js App Router UI\nReact 18 + TypeScript + Tailwind"]
+        UI["React 18 UI\nApp Router Pages · Tailwind"]
     end
 
-    subgraph App["Wapas Application"]
-        Pages["Route Groups\nlanding · auth · (app) shell"]
-        Components["Component Layer\nui · layout · feature modules"]
-        Lib["lib/\ntypes · utils · mock-data"]
+    subgraph App["Wapas Application — Next.js 14"]
+        MW["Middleware\nsession refresh · protected routes"]
+        Routes["Route Groups\nlanding · auth/login+register · (app) shell"]
+        roleDash["Role Dashboards\nshipper · transporter · admin"]
+        components["Component Layer\nui primitives · widgets · charts · layout (AppShell)"]
+        hooks["Hooks\nuseCurrentProfile · feature data hooks"]
+        dataAccess["Data Access\ncreateClient() · createServerSupabaseClient()"]
+        lib["lib/\ntypes · utils · mock-data"]
     end
 
-    subgraph DataLayer["Data Layer"]
+    subgraph Data["Dual Data Path"]
         Mock["Mock Data Source\nmock-data.ts"]
         SupaClient["Supabase Client\nbrowser + server"]
     end
 
-    subgraph Backend["Supabase Backend (optional)"]
-        Auth["Auth"]
-        Postgres["Postgres Database"]
-        RLS["Row Level Security Policies"]
+    subgraph Backend["Supabase Backend"]
+        auth["Auth\nmagic link · OTP · gated signup\nauth.users ⇄ profiles"]
+        pg["Postgres Database"]
+        tbls["Schema\nprofiles · trucks · loads · bookings\ntransactions · notifications · tracking_events\nsaved_transporters (migration 0007)"]
+        rls["RLS Policies\nowner/party-scoped · current_profile_id()"]
+        fn["Functions & Triggers\nhandle_new_user · is_admin · backhaul_match_score"]
     end
 
-    UI --> Pages
-    Pages --> Components
-    Components --> Lib
-    Lib --> Mock
-    Lib -. "page-by-page migration" .-> SupaClient
-    SupaClient --> Auth
-    SupaClient --> Postgres
-    Postgres --> RLS
+    UI --> MW
+    MW --> Routes
+    Routes --> roleDash
+    Routes --> components
+    roleDash --> components
+    components --> hooks
+    hooks --> dataAccess
+    dataAccess --> lib
+    lib --> Mock
+    dataAccess -. "env configured ? live query : mock" .-> SupaClient
+    SupaClient --> auth
+    SupaClient --> pg
+    pg --- tbls
+    pg --- rls
+    pg --- fn
+    auth --> pg
 ```
 
-Pages migrate from mock data to live Supabase queries one route at a time — the Supabase clients return `null` when environment variables aren't configured, so the demo keeps working throughout the transition.
+Roles resolve through `useCurrentProfile()` (linked `auth_user_id → profiles`); `middleware.ts` refreshes the session on protected routes; and role dashboards read owner/party-scoped data via RLS. The Supabase clients return `null` when environment variables aren't set, so each data path degrades to the mock source and the demo keeps working throughout the migration.
 
 ---
 
