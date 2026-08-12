@@ -38,20 +38,20 @@ export function RecentBookings({ bookings: items = bookings }: { bookings?: Rece
       ) : (
         <div className="divide-y divide-navy-100">
           {items.slice(0, 4).map((b) => (
-          <Link key={b.id} href={`/tracking/${b.id}`} className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-navy-50/60 sm:px-6">
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-navy-600">{b.loadTitle}</p>
-              <p className="text-xs text-navy-400">{b.route}{b.vehicleNumber ? ` · ${b.vehicleNumber}` : ''}</p>
-              {b.status === 'in-transit' && <Progress value={b.progressPct} className="mt-2 max-w-[160px]" />}
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-bold text-navy-600">{formatINR(b.amount)}</p>
-              <Badge variant={statusVariant[b.status]} className="mt-1">
-                {b.status.replace('-', ' ')}
-              </Badge>
-            </div>
-          </Link>
-        ))}
+            <Link key={b.id} href={`/tracking/${b.id}`} className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-navy-50/60 sm:px-6">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-navy-600">{b.loadTitle}</p>
+                <p className="text-xs text-navy-400">{b.route}{b.vehicleNumber ? ` · ${b.vehicleNumber}` : ''}</p>
+                {b.status === 'in-transit' && <Progress value={b.progressPct} className="mt-2 max-w-[160px]" />}
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold text-navy-600">{formatINR(b.amount)}</p>
+                <Badge variant={statusVariant[b.status]} className="mt-1">
+                  {b.status.replace('-', ' ')}
+                </Badge>
+              </div>
+            </Link>
+          ))}
         </div>
       )}
     </div>
