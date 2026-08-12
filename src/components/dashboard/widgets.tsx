@@ -31,8 +31,13 @@ export function RecentBookings({ bookings: items = bookings }: { bookings?: Rece
           View all <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
-      <div className="divide-y divide-navy-100">
-        {items.slice(0, 4).map((b) => (
+      {items.length === 0 ? (
+        <p className="mx-5 mb-5 rounded-2xl border border-dashed border-navy-200 p-5 text-center text-sm text-navy-400 sm:mx-6 sm:mb-6">
+          No bookings yet. Once a shipper books your truck, it will appear here.
+        </p>
+      ) : (
+        <div className="divide-y divide-navy-100">
+          {items.slice(0, 4).map((b) => (
           <Link key={b.id} href={`/tracking/${b.id}`} className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-navy-50/60 sm:px-6">
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold text-navy-600">{b.loadTitle}</p>
