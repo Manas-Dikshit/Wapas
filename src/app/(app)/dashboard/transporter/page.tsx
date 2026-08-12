@@ -86,7 +86,16 @@ export default function TransporterDashboardPage() {
 
   const [showTruckForm, setShowTruckForm] = useState(false);
   const [savingTruck, setSavingTruck] = useState(false);
-  const [truckForm, setTruckForm] = useState({
+  const [truckForm, setTruckForm] = useState<{
+    reg_number: string;
+    type: string;
+    capacity_tons: string;
+    current_city: string;
+    destination_city: string;
+    available_from: string;
+    price_per_ton: string;
+    empty_leg: boolean;
+  }>({
     reg_number: '',
     type: truckTypes[0],
     capacity_tons: '',
