@@ -10,8 +10,7 @@ import { RecentBookings, AiRecommendations, type RecentBookingItem, type AiRecom
 import { useCurrentProfile } from '@/lib/hooks/use-current-profile';
 import { createClient } from '@/lib/supabase/client';
 import { cn, formatINR } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton, Switch } from '@/components/ui/primitives';
