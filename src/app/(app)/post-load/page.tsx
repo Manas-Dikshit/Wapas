@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, Sparkles } from 'lucide-react';
 import { cities } from '@/lib/mock-data';
+import { useCurrentProfile } from '@/lib/hooks/use-current-profile';
+import { createClient } from '@/lib/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -13,6 +15,7 @@ const categories = ['Textiles', 'FMCG', 'Perishables', 'Automotive', 'Constructi
 
 export default function PostLoadPage() {
   const router = useRouter();
+  const { profile } = useCurrentProfile();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     title: '',
@@ -25,9 +28,43 @@ export default function PostLoadPage() {
     truckType: truckTypes[0]
   });
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+
+    const supabase = createClient();
+    const shipperId = profile?.role === 'shipper' ? profile.id : undefined;
+
+    // Real Supabase path: INSERT into `loads` for this shipper. RLS
+    // (loads_insert_own) enforces shipper_id = current_profile_id(), so the
+    // row lands under the signed-in shipper with no client-side override.
+    if (supabase && shipperId) {
+      const { error } = await supabase.from('loads').insert({
+        shipper_id: shipperId,
+        title: form.title,
+        category: form.category,
+        weight_tons: Number(form.weight),
+        origin_city: form.origin,
+        destination_city: form.destination,
+        pickup_date: form.pickupDate,
+        budget: Number(form.budget),
+        truck_type_needed: form.truckType,
+        status: 'open'
+      });
+
+      setLoading(false);
+
+      if (error) {
+        toast.error('Could not post load', { description: error.message });
+        return;
+      }
+
+      toast.success('Load posted', { description: 'We\'re matching it with nearby transporters now.' });
+      router.push('/dashboard/shipper');
+      return;
+    }
+
+    // Demo fallback (no Supabase configured, or no signed-in shipper).
     setTimeout(() => {
       setLoading(false);
       toast.success('Load posted', { description: 'We\'re matching it with nearby transporters now.' });
