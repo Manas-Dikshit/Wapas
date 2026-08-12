@@ -12,7 +12,17 @@ const statusVariant = {
   cancelled: 'danger'
 } as const;
 
-export function RecentBookings() {
+export type RecentBookingItem = {
+  id: string;
+  loadTitle: string;
+  route: string;
+  vehicleNumber?: string;
+  status: keyof typeof statusVariant;
+  progressPct: number;
+  amount: number;
+};
+
+export function RecentBookings({ bookings: items = bookings }: { bookings?: RecentBookingItem[] }) {
   return (
     <div className="card-surface">
       <div className="flex items-center justify-between p-5 sm:p-6">
@@ -22,11 +32,11 @@ export function RecentBookings() {
         </Link>
       </div>
       <div className="divide-y divide-navy-100">
-        {bookings.slice(0, 4).map((b) => (
+        {items.slice(0, 4).map((b) => (
           <Link key={b.id} href={`/tracking/${b.id}`} className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-navy-50/60 sm:px-6">
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold text-navy-600">{b.loadTitle}</p>
-              <p className="text-xs text-navy-400">{b.route} · {b.vehicleNumber}</p>
+              <p className="text-xs text-navy-400">{b.route}{b.vehicleNumber ? ` · ${b.vehicleNumber}` : ''}</p>
               {b.status === 'in-transit' && <Progress value={b.progressPct} className="mt-2 max-w-[160px]" />}
             </div>
             <div className="text-right">
@@ -42,8 +52,27 @@ export function RecentBookings() {
   );
 }
 
-export function AiRecommendations() {
-  const recommended = loads.filter((l) => l.aiRecommended).slice(0, 3);
+export type AiRecommendationItem = {
+  id: string;
+  title: string;
+  originCity: string;
+  destinationCity: string;
+  weightTons: number;
+  matchScore: number;
+};
+
+const mockRecommendations: AiRecommendationItem[] = loads
+  .filter((l) => l.aiRecommended)
+  .map((l, i) => ({
+    id: l.id,
+    title: l.title,
+    originCity: l.originCity,
+    destinationCity: l.destinationCity,
+    weightTons: l.weightTons,
+    matchScore: 92 - i * 3
+  }));
+
+export function AiRecommendations({ loads: items = mockRecommendations }: { loads?: AiRecommendationItem[] }) {
   return (
     <div className="card-surface">
       <div className="flex items-center gap-2 p-5 sm:p-6">
@@ -53,7 +82,7 @@ export function AiRecommendations() {
         <h3 className="font-display text-base font-bold text-navy-600">AI recommended loads</h3>
       </div>
       <div className="space-y-3 px-5 pb-5 sm:px-6 sm:pb-6">
-        {recommended.map((l) => (
+        {items.slice(0, 3).map((l) => (
           <Link
             key={l.id}
             href={`/marketplace/${l.id}`}
@@ -64,7 +93,7 @@ export function AiRecommendations() {
               <p className="text-xs text-navy-400">{l.originCity} → {l.destinationCity} · {l.weightTons}T</p>
             </div>
             <div className="text-right">
-              <p className="font-display text-sm font-extrabold text-blue-500">{92 - recommended.indexOf(l) * 3}%</p>
+              <p className="font-display text-sm font-extrabold text-blue-500">{l.matchScore}%</p>
               <p className="text-[10px] text-navy-300">match</p>
             </div>
           </Link>
