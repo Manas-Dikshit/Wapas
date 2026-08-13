@@ -236,6 +236,7 @@ The shipper experience was completed end-to-end (see
 | **Payments** | Mocked — booking flow always succeeds | Swap in a real gateway (Razorpay/Stripe) behind the same UI |
 | **Maps** | Stylized SVG, not a live embed — keeps the demo API-key-free | `TrackingMap` (`src/components/tracking/map-placeholder.tsx`) is isolated for a drop-in real map SDK |
 | **AI match scores** | Illustrative — `backhaul_match_score()` in `0002_functions_triggers.sql` shows the intended formula | Replace with a trained model |
+| **Marketplace search & tracking** | Marketplace lists (`loads`/`trucks`), truck detail, booking and tracking pages still render `mock-data.ts`; the "Download invoice" button is a stub | Swap their data sources for Supabase queries, and wire the invoice to a real receipt/download |
 
 ---
 
