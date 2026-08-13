@@ -39,6 +39,7 @@ It's a genuine Next.js application, not a static prototype, and is wired to opti
 - [Design System](#design-system)
 - [Mock Data & Demo Mode](#mock-data--demo-mode)
 - [Supabase Backend](#supabase-backend-optional)
+- [Shipper Features](#shipper-features)
 - [Responsive & Accessibility](#responsive--accessibility-notes)
 - [Known Simplifications](#known-simplifications)
 
@@ -105,7 +106,7 @@ flowchart TB
     subgraph Backend["Supabase Backend"]
         auth["Auth\nmagic link · OTP · gated signup\nauth.users ⇄ profiles"]
         pg["Postgres Database"]
-        tbls["Schema\nprofiles · trucks · loads · bookings\ntransactions · notifications · tracking_events\nsaved_transporters (migration 0007)"]
+        tbls["Schema\nprofiles · trucks · loads · bookings\ntransactions · notifications · tracking_events\nsaved_transporters (0007) · load_recommendations view (0008)\nmigrations 0001–0009"]
         rls["RLS Policies\nowner/party-scoped · current_profile_id()"]
         fn["Functions & Triggers\nhandle_new_user · is_admin · backhaul_match_score"]
     end
@@ -161,6 +162,16 @@ Forms (login OTP, register, post a load, booking payment) simulate a network req
 
 **To connect real data:** replace the imports from `mock-data.ts` in a page with a Supabase query using `createClient()` (browser) or `createServerSupabaseClient()` (server components), both in `src/lib/supabase/`. They return `null` when Supabase env vars aren't set, so you can migrate one page at a time without breaking the rest of the demo.
 
+**Current real-vs-mock split:**
+
+| Page | Source |
+|---|---|
+| Shipper dashboard (`/dashboard/shipper`) | **Real** — loads, bookings, transactions, saved transporters via Supabase + RLS |
+| Post a load (`/post-load`) | **Real** — INSERT into `loads` + duplicate & budget warnings |
+| Marketplace, truck detail, booking, tracking | **Mock** — `src/lib/mock-data.ts` (unchanged) |
+
+Marketplace truck search still filters the mock truck set, but the **shipper-facing features built on top** (advanced filters, truck-type visuals, saved-transporter actions, load management, invoice access) are implemented against the real Supabase schema and keep working in demo mode. See [Shipper Features](#shipper-features).
+
 ---
 
 ## Supabase Backend (optional)
@@ -183,6 +194,31 @@ npx supabase db execute --file supabase/seed.sql
 
 ---
 
+## Shipper Features
+
+The shipper experience was completed end-to-end (see
+[`docs/CHANGELOG_shipper_feature_completeness.md`](./docs/CHANGELOG_shipper_feature_completeness.md) for per-feature files, edge-case handling and manual test steps).
+
+| Feature | Where |
+|---|---|
+| **Advanced truck filters** — truck type, capacity range, price range, availability date, transporter rating minimum, plus a "Reset filters" control | `filter-bar.tsx` (collapsible "More filters" panel) + `marketplace/page.tsx` |
+| **Truck/container type visuals** — local, bundled SVG silhouette per type (no external API), shown on cards, detail and booking review | `truck-type-icon.tsx` + `lib/truck-types.ts` |
+| **Saved transporters** — real heart save/unsave on truck cards & the transporter view, plus a live list + unsave on the dashboard | `save-transporter-button.tsx` → `saved_transporters` table (RLS-scoped) |
+| **Load management** — edit (date/budget) or cancel an open load from the dashboard, RLS-scoped to the shipper's own rows | `dashboard/shipper/page.tsx` |
+| **Invoice access** — delivered bookings link to the tracking page's "Download invoice" button (reused, not duplicated) | `dashboard/shipper/page.tsx` |
+
+**Edge cases surfaced as features, not silent failures:**
+
+- **Zero truck matches** → actionable empty state with a **"Clear all filters"** CTA.
+- **Pickup date passed on an open load** → amber **"Needs attention"** banner, per-load "Pickup passed" badge, and a stat card — edit date or cancel from there.
+- **Near-duplicate load** (same route/date/weight) → inline notice + confirmation before submit; posting still allowed.
+- **Budget well below typical price-per-ton × weight** → soft inline warning; never blocks posting.
+- **Cancelling a load/booking with a transporter attached** → confirmation step, then `status = 'cancelled'` (never a hard delete).
+
+**No schema migration was needed for any of the above** — `saved_transporters` already existed (migration 0007), so migrations 0001–0009 and all RLS policies are untouched.
+
+---
+
 ## Responsive & Accessibility Notes
 
 - Mobile-first at 320–414px, verified breakpoints at 768 / 1024 / 1440, and ultra-wide via `max-w-[1400px]` containers.
@@ -200,6 +236,7 @@ npx supabase db execute --file supabase/seed.sql
 | **Payments** | Mocked — booking flow always succeeds | Swap in a real gateway (Razorpay/Stripe) behind the same UI |
 | **Maps** | Stylized SVG, not a live embed — keeps the demo API-key-free | `TrackingMap` (`src/components/tracking/map-placeholder.tsx`) is isolated for a drop-in real map SDK |
 | **AI match scores** | Illustrative — `backhaul_match_score()` in `0002_functions_triggers.sql` shows the intended formula | Replace with a trained model |
+| **Marketplace search & tracking** | Marketplace lists (`loads`/`trucks`), truck detail, booking and tracking pages still render `mock-data.ts`; the "Download invoice" button is a stub | Swap their data sources for Supabase queries, and wire the invoice to a real receipt/download |
 
 ---
 
