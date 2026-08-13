@@ -6,6 +6,7 @@ import { Check, CreditCard, Loader2, Shield, Smartphone, Wallet as WalletIcon } 
 import { loads, trucks } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { cn, formatINR } from '@/lib/utils';
+import { TruckTypeIcon } from '@/components/marketplace/truck-type-icon';
 
 const steps = ['Review', 'Payment', 'Confirmed'];
 
@@ -55,6 +56,12 @@ export default function BookingPage({ params }: { params: { id: string } }) {
       {step === 0 && (
         <div className="card-surface p-6">
           <h2 className="font-display text-lg font-bold text-navy-600">Review booking</h2>
+          {!load && truck && (
+            <div className="mt-3 flex items-center gap-2">
+              <TruckTypeIcon type={truck.type} className="h-8 w-12" />
+              <span className="text-xs font-semibold text-navy-400">{truck.type} truck</span>
+            </div>
+          )}
           <div className="mt-5 space-y-3 rounded-2xl bg-navy-50 p-4">
             <Row label="Shipment" value={title} />
             <Row label="Route" value={route} />
