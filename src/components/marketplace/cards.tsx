@@ -3,6 +3,8 @@ import { ArrowUpRight, Flame, MapPin, Sparkles, Truck as TruckIcon, Weight } fro
 import type { Load, Truck } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { formatINR } from '@/lib/utils';
+import { TruckTypeIcon } from '@/components/marketplace/truck-type-icon';
+import { SaveTransporterButton } from '@/components/marketplace/save-transporter-button';
 
 export function LoadCard({ load }: { load: Load }) {
   return (
@@ -44,37 +46,43 @@ export function LoadCard({ load }: { load: Load }) {
 
 export function TruckCard({ truck }: { truck: Truck }) {
   return (
-    <Link href={`/marketplace/${truck.id}`} className="group card-surface block p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-floating">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-navy-600">{truck.type} · {truck.capacityTons}T</p>
-          <p className="text-xs text-navy-400">{truck.transporterName} · {truck.regNumber}</p>
-        </div>
-        {truck.matchScore && (
-          <div className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-center">
-            <p className="text-xs font-extrabold text-blue-600">{truck.matchScore}%</p>
+    <div className="group relative flex flex-col card-surface p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-floating">
+      <SaveTransporterButton transporterId={truck.transporterId} size="sm" className="absolute right-4 top-4 z-10" />
+      <Link href={`/marketplace/${truck.id}`} className="flex flex-1 flex-col">
+        <div className="flex items-start justify-between gap-3 pr-8">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-navy-600">{truck.type} · {truck.capacityTons}T</p>
+            <p className="text-xs text-navy-400">{truck.transporterName} · {truck.regNumber}</p>
           </div>
-        )}
-      </div>
+          {truck.matchScore && (
+            <div className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-center">
+              <p className="text-xs font-extrabold text-blue-600">{truck.matchScore}%</p>
+            </div>
+          )}
+        </div>
 
-      <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-navy-500">
-        <MapPin className="h-4 w-4 text-aqua-500" />
-        {truck.currentCity}
-        <span className="text-navy-300">→</span>
-        {truck.destinationCity}
-        {truck.emptyLeg && <Badge variant="aqua" className="ml-1">Empty leg</Badge>}
-      </div>
+        <div className="mt-4 flex items-center gap-3">
+          <TruckTypeIcon type={truck.type} className="h-8 w-12" />
+          <div className="flex flex-1 items-center gap-2 text-sm font-semibold text-navy-500">
+            <MapPin className="h-4 w-4 text-aqua-500" />
+            {truck.currentCity}
+            <span className="text-navy-300">→</span>
+            {truck.destinationCity}
+            {truck.emptyLeg && <Badge variant="aqua" className="ml-1">Empty leg</Badge>}
+          </div>
+        </div>
 
-      <div className="mt-4 text-xs text-navy-400">
-        Available from {new Date(truck.availableFrom).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} · ★ {truck.transporterRating}
-      </div>
+        <div className="mt-4 text-xs text-navy-400">
+          Available from {new Date(truck.availableFrom).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} · ★ {truck.transporterRating}
+        </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-navy-100 pt-4">
-        <p className="font-display text-lg font-extrabold text-navy-600">{formatINR(truck.pricePerTon)}<span className="text-xs font-medium text-navy-400">/ton</span></p>
-        <span className="flex items-center gap-1 text-xs font-bold text-blue-500 opacity-0 transition-opacity group-hover:opacity-100">
-          Book now <ArrowUpRight className="h-3.5 w-3.5" />
-        </span>
-      </div>
-    </Link>
+        <div className="mt-4 flex items-center justify-between border-t border-navy-100 pt-4">
+          <p className="font-display text-lg font-extrabold text-navy-600">{formatINR(truck.pricePerTon)}<span className="text-xs font-medium text-navy-400">/ton</span></p>
+          <span className="flex items-center gap-1 text-xs font-bold text-blue-500 opacity-0 transition-opacity group-hover:opacity-100">
+            Book now <ArrowUpRight className="h-3.5 w-3.5" />
+          </span>
+        </div>
+      </Link>
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import { PackageSearch } from 'lucide-react';
 import { Tabs } from '@/components/ui/primitives';
 import { FilterBar } from '@/components/marketplace/filter-bar';
 import { LoadCard, TruckCard } from '@/components/marketplace/cards';
+import { Button } from '@/components/ui/button';
 import { loads, trucks, routeStats } from '@/lib/mock-data';
 
 export default function MarketplacePage() {
@@ -12,6 +13,12 @@ export default function MarketplacePage() {
   const [query, setQuery] = useState('');
   const [city, setCity] = useState('');
   const [type, setType] = useState('');
+  const [capacityMin, setCapacityMin] = useState('');
+  const [capacityMax, setCapacityMax] = useState('');
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
+  const [availableFrom, setAvailableFrom] = useState('');
+  const [ratingMin, setRatingMin] = useState('');
 
   const filteredLoads = useMemo(
     () =>
@@ -30,12 +37,31 @@ export default function MarketplacePage() {
         const matchesQuery = query ? `${t.type} ${t.currentCity} ${t.destinationCity} ${t.transporterName}`.toLowerCase().includes(query.toLowerCase()) : true;
         const matchesCity = city ? t.currentCity === city || t.destinationCity === city : true;
         const matchesType = type ? t.type === type : true;
-        return matchesQuery && matchesCity && matchesType;
+        const matchesCapMin = capacityMin ? t.capacityTons >= Number(capacityMin) : true;
+        const matchesCapMax = capacityMax ? t.capacityTons <= Number(capacityMax) : true;
+        const matchesPriceMin = priceMin ? t.pricePerTon >= Number(priceMin) : true;
+        const matchesPriceMax = priceMax ? t.pricePerTon <= Number(priceMax) : true;
+        const matchesAvailable = availableFrom ? new Date(t.availableFrom) <= new Date(availableFrom) : true;
+        const matchesRating = ratingMin ? t.transporterRating >= Number(ratingMin) : true;
+        return matchesQuery && matchesCity && matchesType && matchesCapMin && matchesCapMax && matchesPriceMin && matchesPriceMax && matchesAvailable && matchesRating;
       }),
-    [query, city, type]
+    [query, city, type, capacityMin, capacityMax, priceMin, priceMax, availableFrom, ratingMin]
   );
 
+  const hasFilters = Boolean(query || city || type || capacityMin || capacityMax || priceMin || priceMax || availableFrom || ratingMin);
   const results = mode === 'loads' ? filteredLoads : filteredTrucks;
+
+  function resetFilters() {
+    setQuery('');
+    setCity('');
+    setType('');
+    setCapacityMin('');
+    setCapacityMax('');
+    setPriceMin('');
+    setPriceMax('');
+    setAvailableFrom('');
+    setRatingMin('');
+  }
 
   return (
     <div className="space-y-6 pb-6 animate-fade-up">
@@ -54,7 +80,27 @@ export default function MarketplacePage() {
         />
       </div>
 
-      <FilterBar query={query} onQueryChange={setQuery} city={city} onCityChange={setCity} type={type} onTypeChange={setType} />
+      <FilterBar
+        query={query}
+        onQueryChange={setQuery}
+        city={city}
+        onCityChange={setCity}
+        type={type}
+        onTypeChange={setType}
+        capacityMin={capacityMin}
+        onCapacityMinChange={setCapacityMin}
+        capacityMax={capacityMax}
+        onCapacityMaxChange={setCapacityMax}
+        priceMin={priceMin}
+        onPriceMinChange={setPriceMin}
+        priceMax={priceMax}
+        onPriceMaxChange={setPriceMax}
+        availableFrom={availableFrom}
+        onAvailableFromChange={setAvailableFrom}
+        ratingMin={ratingMin}
+        onRatingMinChange={setRatingMin}
+        onReset={resetFilters}
+      />
 
       <div className="scrollbar-none flex gap-3 overflow-x-auto pb-1">
         {routeStats.map((r) => (
@@ -71,7 +117,14 @@ export default function MarketplacePage() {
             <PackageSearch className="h-6 w-6" />
           </div>
           <p className="font-display text-base font-bold text-navy-600">No matches found</p>
-          <p className="max-w-xs text-sm text-navy-400">Try adjusting your filters or search a different city and truck type.</p>
+          <p className="max-w-xs text-sm text-navy-400">
+            {hasFilters ? 'No trucks match your filters. Try widening your capacity, price or availability range.' : 'Try adjusting your filters or search a different city and truck type.'}
+          </p>
+          {hasFilters && (
+            <Button variant="outline" size="sm" onClick={resetFilters} className="mt-1">
+              Clear all filters
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

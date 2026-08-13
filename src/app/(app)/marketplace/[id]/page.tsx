@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/primitives';
 import { cn, formatINR } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
+import { TruckTypeIcon } from '@/components/marketplace/truck-type-icon';
+import { SaveTransporterButton } from '@/components/marketplace/save-transporter-button';
 
 export default function MarketplaceDetailPage({ params }: { params: { id: string } }) {
   const load = loads.find((l) => l.id === params.id);
