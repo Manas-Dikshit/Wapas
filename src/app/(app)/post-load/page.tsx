@@ -189,7 +189,7 @@ export default function PostLoadPage() {
           <div className="flex items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4">
             <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
             <p className="text-xs text-blue-700">
-              Looks like a near-duplicate of "<strong>{duplicate}</strong>" on the same route, date and weight. Posting a
+              Looks like a near-duplicate of &quot;<strong>{duplicate}</strong>&quot; on the same route, date and weight. Posting a
               duplicate is allowed, but it may split demand. <strong>Check the form above</strong> before submitting.
             </p>
           </div>

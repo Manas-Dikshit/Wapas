@@ -337,7 +337,7 @@ export default function ShipperDashboardPage() {
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
           <div className="flex-1 text-sm text-amber-700">
             <p className="font-bold">Pickup date passed on {staleLoads.length} open load{staleLoads.length > 1 ? 's' : ''}.</p>
-            <p className="text-xs">Update the pickup date or cancel below so these don't sit stale on the marketplace.</p>
+            <p className="text-xs">Update the pickup date or cancel below so these don&apos;t sit stale on the marketplace.</p>
           </div>
         </div>
       )}
