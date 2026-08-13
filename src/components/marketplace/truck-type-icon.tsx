@@ -21,7 +21,6 @@ export function TruckTypeIcon({
       viewBox="0 0 48 32"
       aria-hidden="true"
       role="img"
-      title={title ?? type}
       className={cn('h-8 w-12 text-blue-500', className)}
       fill="none"
       stroke="currentColor"
@@ -29,6 +28,7 @@ export function TruckTypeIcon({
       strokeLinecap="round"
       strokeLinejoin="round"
     >
+      <title>{title ?? type}</title>
       <TruckShape type={type} />
     </svg>
   );
