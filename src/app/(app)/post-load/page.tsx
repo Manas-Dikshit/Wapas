@@ -174,12 +174,33 @@ export default function PostLoadPage() {
           </div>
         </Field>
 
+        {budgetLow && (
+          <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+            <p className="text-xs text-amber-700">
+              Your budget of <strong>{formatINR(Number(form.budget))}</strong> is well below the typical{' '}
+              <strong>{formatINR(typicalCost)}</strong> for a {form.truckType} moving {form.weight}T
+              ({formatINR(typicalPerTon)}/ton on average). You can still post, but fewer transporters may respond.
+            </p>
+          </div>
+        )}
+
+        {duplicate && (
+          <div className="flex items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
+            <p className="text-xs text-blue-700">
+              Looks like a near-duplicate of "<strong>{duplicate}</strong>" on the same route, date and weight. Posting a
+              duplicate is allowed, but it may split demand. <strong>Check the form above</strong> before submitting.
+            </p>
+          </div>
+        )}
+
         <div className="flex items-start gap-3 rounded-2xl bg-blue-50 p-4">
           <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
           <p className="text-xs text-blue-700">Our AI will automatically match this load with the best-fit backhaul trucks and notify you as matches come in.</p>
         </div>
 
-        <Button type="submit" className="w-full" size="lg" disabled={loading}>
+        <Button type="submit" className="w-full" size="lg" disabled={loading || checking}>
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           {loading ? 'Posting load…' : 'Post load'}
         </Button>
