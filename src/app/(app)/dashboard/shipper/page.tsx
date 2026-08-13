@@ -8,11 +8,12 @@ import { toast } from 'sonner';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, Progress, Skeleton } from '@/components/ui/primitives';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { useCurrentProfile } from '@/lib/hooks/use-current-profile';
 import { createClient } from '@/lib/supabase/client';
 import { cn, formatCompactINR, formatINR } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+
+type SupabaseClient = NonNullable<ReturnType<typeof createClient>>;
 
 type LoadRow = {
   id: string;
@@ -76,7 +77,7 @@ export default function ShipperDashboardPage() {
   const isShipper = profile?.role === 'shipper';
 
   const runRefresh = useCallback(
-    async (sb: ReturnType<typeof createClient> extends null ? never : NonNullable<ReturnType<typeof createClient>>, shipperId: string) => {
+    async (sb: SupabaseClient, shipperId: string) => {
       const [loadsRes, bookingsRes, txnRes, savedRes] = await Promise.all([
         sb
           .from('loads')
