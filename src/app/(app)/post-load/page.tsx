@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { AlertTriangle, Loader2, MapPin, Sparkles } from 'lucide-react';
@@ -17,6 +17,21 @@ const truckTypes = ['Open Body', 'Container', 'Trailer', 'Refrigerated', 'Tanker
 const categories = ['Textiles', 'FMCG', 'Perishables', 'Automotive', 'Construction', 'Agri-commodities', 'Pharma', 'Electronics'];
 
 export default function PostLoadPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-2xl space-y-6 pb-6 animate-fade-up">
+          <div className="skeleton h-9 w-56" />
+          <div className="skeleton h-[520px] w-full" />
+        </div>
+      }
+    >
+      <PostLoadForm />
+    </Suspense>
+  );
+}
+
+function PostLoadForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { profile } = useCurrentProfile();
