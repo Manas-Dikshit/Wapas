@@ -9,7 +9,8 @@ import { RouteStrip } from '@/components/marketplace/route-strip';
 export function RoutePreview({ route, className }: { route: Route; className?: string }) {
   const [open, setOpen] = useState(false);
   const stops = route.stops;
-  const midCount = stops.length - 2;
+  const last = stops.length - 1;
+  const midCount = stops.filter((s, i) => i !== 0 && i !== last && !s.isHighwayJunction).length;
 
   if (stops.length === 0) return null;
 

@@ -5,6 +5,7 @@ import { PackageSearch } from 'lucide-react';
 import { Tabs } from '@/components/ui/primitives';
 import { FilterBar } from '@/components/marketplace/filter-bar';
 import { LoadCard, TruckCard } from '@/components/marketplace/cards';
+import { IntermediateStops } from '@/components/marketplace/intermediate-stops';
 import { Button } from '@/components/ui/button';
 import { loads, trucks, routeStats } from '@/lib/mock-data';
 
@@ -134,6 +135,8 @@ export default function MarketplacePage() {
             : filteredTrucks.map((t) => <TruckCard key={t.id} truck={t} />)}
         </div>
       )}
+
+      <IntermediateStops />
     </div>
   );
 }
