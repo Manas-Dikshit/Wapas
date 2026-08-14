@@ -22,7 +22,15 @@ export type RecentBookingItem = {
   amount: number;
 };
 
-export function RecentBookings({ bookings: items = bookings }: { bookings?: RecentBookingItem[] }) {
+export type BookingStatusAction = (id: string, next: 'in-transit' | 'delivered') => void;
+
+export function RecentBookings({
+  bookings: items = bookings,
+  onUpdateStatus
+}: {
+  bookings?: RecentBookingItem[];
+  onUpdateStatus?: BookingStatusAction;
+}) {
   return (
     <div className="card-surface">
       <div className="flex items-center justify-between p-5 sm:p-6">
@@ -38,19 +46,39 @@ export function RecentBookings({ bookings: items = bookings }: { bookings?: Rece
       ) : (
         <div className="divide-y divide-navy-100">
           {items.slice(0, 4).map((b) => (
-            <Link key={b.id} href={`/tracking/${b.id}`} className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-navy-50/60 sm:px-6">
-              <div className="min-w-0 flex-1">
+            <div key={b.id} className="flex items-center gap-4 px-5 py-4 sm:px-6">
+              <Link href={`/tracking/${b.id}`} className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-navy-600">{b.loadTitle}</p>
                 <p className="text-xs text-navy-400">{b.route}{b.vehicleNumber ? ` · ${b.vehicleNumber}` : ''}</p>
                 {b.status === 'in-transit' && <Progress value={b.progressPct} className="mt-2 max-w-[160px]" />}
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-bold text-navy-600">{formatINR(b.amount)}</p>
+              </Link>
+              <div className="flex shrink-0 flex-col items-end gap-1.5">
                 <Badge variant={statusVariant[b.status]} className="mt-1">
                   {b.status.replace('-', ' ')}
                 </Badge>
+                {onUpdateStatus && b.status === 'confirmed' && (
+                  <button
+                    type="button"
+                    onClick={() => onUpdateStatus(b.id, 'in-transit')}
+                    className="rounded-full bg-aqua-50 px-2.5 py-1 text-[11px] font-bold text-aqua-600 hover:bg-aqua-100"
+                  >
+                    Start trip
+                  </button>
+                )}
+                {onUpdateStatus && b.status === 'in-transit' && (
+                  <button
+                    type="button"
+                    onClick={() => onUpdateStatus(b.id, 'delivered')}
+                    className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-600 hover:bg-emerald-100"
+                  >
+                    Mark delivered
+                  </button>
+                )}
               </div>
-            </Link>
+              <div className="text-right">
+                <p className="text-sm font-bold text-navy-600">{formatINR(b.amount)}</p>
+              </div>
+            </div>
           ))}
         </div>
       )}
@@ -78,7 +106,13 @@ const mockRecommendations: AiRecommendationItem[] = loads
     matchScore: 92 - i * 3
   }));
 
-export function AiRecommendations({ loads: items = mockRecommendations }: { loads?: AiRecommendationItem[] }) {
+export function AiRecommendations({
+  loads: items = mockRecommendations,
+  onAccept
+}: {
+  loads?: AiRecommendationItem[];
+  onAccept?: (id: string) => void;
+}) {
   return (
     <div className="card-surface">
       <div className="flex items-center gap-2 p-5 sm:p-6">
@@ -94,20 +128,30 @@ export function AiRecommendations({ loads: items = mockRecommendations }: { load
       ) : (
         <div className="space-y-3 px-5 pb-5 sm:px-6 sm:pb-6">
           {items.slice(0, 3).map((l) => (
-            <Link
+            <div
               key={l.id}
-              href={`/marketplace/${l.id}`}
-              className="flex items-center justify-between rounded-2xl border border-navy-100 p-3.5 transition-colors hover:border-blue-300 hover:bg-blue-50/50"
+              className="flex items-center justify-between gap-3 rounded-2xl border border-navy-100 p-3.5 transition-colors hover:border-blue-300 hover:bg-blue-50/50"
             >
-              <div className="min-w-0">
+              <Link href={`/marketplace/${l.id}`} className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-navy-600">{l.title}</p>
                 <p className="text-xs text-navy-400">{l.originCity} → {l.destinationCity} · {l.weightTons}T</p>
+              </Link>
+              <div className="flex shrink-0 items-center gap-2 text-right">
+                <div>
+                  <p className="font-display text-sm font-extrabold text-blue-500">{l.matchScore}%</p>
+                  <p className="text-[10px] text-navy-300">match</p>
+                </div>
+                {onAccept && (
+                  <button
+                    type="button"
+                    onClick={() => onAccept(l.id)}
+                    className="rounded-full bg-blue-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-blue-700"
+                  >
+                    Accept
+                  </button>
+                )}
               </div>
-              <div className="text-right">
-                <p className="font-display text-sm font-extrabold text-blue-500">{l.matchScore}%</p>
-                <p className="text-[10px] text-navy-300">match</p>
-              </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}

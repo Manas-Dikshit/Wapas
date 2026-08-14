@@ -8,6 +8,32 @@ import { TRUCK_TYPES } from '@/lib/truck-types';
 
 const ratings = ['3.0', '3.5', '4.0', '4.5'];
 
+/**
+ * Optional group of load-oriented advanced filters. Passed (as `load`) when the
+ * filter bar is being used to browse loads (marketplace loads tab). When absent
+ * the bar renders exactly as it did before — truck filters only — so the shipper
+ * stage's truck search is unaffected. This extends the existing More-filters
+ * pattern rather than rewriting it.
+ */
+export type LoadFilterGroup = {
+  origin: string;
+  onOriginChange: (v: string) => void;
+  destination: string;
+  onDestinationChange: (v: string) => void;
+  weightMin: string;
+  onWeightMinChange: (v: string) => void;
+  weightMax: string;
+  onWeightMaxChange: (v: string) => void;
+  budgetMin: string;
+  onBudgetMinChange: (v: string) => void;
+  budgetMax: string;
+  onBudgetMaxChange: (v: string) => void;
+  pickupFrom: string;
+  onPickupFromChange: (v: string) => void;
+  pickupTo: string;
+  onPickupToChange: (v: string) => void;
+};
+
 export function FilterBar({
   query,
   onQueryChange,
@@ -27,7 +53,8 @@ export function FilterBar({
   onAvailableFromChange,
   ratingMin,
   onRatingMinChange,
-  onReset
+  onReset,
+  load
 }: {
   query: string;
   onQueryChange: (v: string) => void;
@@ -48,12 +75,23 @@ export function FilterBar({
   ratingMin?: string;
   onRatingMinChange?: (v: string) => void;
   onReset?: () => void;
+  load?: Partial<LoadFilterGroup>;
 }) {
   const [expanded, setExpanded] = useState(false);
   const hasAdvanced = Boolean(onCapacityMinChange && onPriceMinChange && onAvailableFromChange && onRatingMinChange);
+  const hasLoadFilters = Boolean(load && load.onWeightMinChange && load.onBudgetMinChange && load.onPickupFromChange);
   const active =
-    hasAdvanced &&
-    (Boolean(capacityMin) || Boolean(capacityMax) || Boolean(priceMin) || Boolean(priceMax) || Boolean(availableFrom) || Boolean(ratingMin));
+    (hasAdvanced &&
+      (Boolean(capacityMin) || Boolean(capacityMax) || Boolean(priceMin) || Boolean(priceMax) || Boolean(availableFrom) || Boolean(ratingMin))) ||
+    (hasLoadFilters &&
+      (Boolean(load?.origin) ||
+        Boolean(load?.destination) ||
+        Boolean(load?.weightMin) ||
+        Boolean(load?.weightMax) ||
+        Boolean(load?.budgetMin) ||
+        Boolean(load?.budgetMax) ||
+        Boolean(load?.pickupFrom) ||
+        Boolean(load?.pickupTo)));
 
   return (
     <div className="card-surface flex flex-col gap-3 p-3">
@@ -99,34 +137,50 @@ export function FilterBar({
         </div>
       </div>
 
-      {expanded && hasAdvanced && (
+      {(expanded && (hasAdvanced || hasLoadFilters)) && (
         <div className="grid grid-cols-2 gap-3 border-t border-navy-100 pt-3 sm:grid-cols-3 lg:grid-cols-6">
-          <RangeInput label="Capacity min (T)" value={capacityMin} onChange={onCapacityMinChange} type="number" min="0" />
-          <RangeInput label="Capacity max (T)" value={capacityMax} onChange={onCapacityMaxChange} type="number" min="0" />
-          <RangeInput label="Price min (₹/ton)" value={priceMin} onChange={onPriceMinChange} type="number" min="0" />
-          <RangeInput label="Price max (₹/ton)" value={priceMax} onChange={onPriceMaxChange} type="number" min="0" />
-          <div>
-            <label className="mb-1 block text-[11px] font-bold text-navy-500">Available from</label>
-            <input
-              type="date"
-              value={availableFrom}
-              onChange={(e) => onAvailableFromChange?.(e.target.value)}
-              className="h-10 w-full rounded-xl border border-navy-100 bg-canvas px-3 text-sm text-navy-600 focus:border-blue-400"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-[11px] font-bold text-navy-500">Min rating</label>
-            <select
-              value={ratingMin}
-              onChange={(e) => onRatingMinChange?.(e.target.value)}
-              className="h-10 w-full rounded-xl border border-navy-100 bg-canvas px-3 text-sm font-semibold text-navy-500 focus:border-blue-400"
-            >
-              <option value="">Any</option>
-              {ratings.map((r) => (
-                <option key={r} value={r}>★ {r}+</option>
-              ))}
-            </select>
-          </div>
+          {hasLoadFilters && (
+            <>
+              <SelectField label="Origin" value={load!.origin} onChange={load!.onOriginChange} options={cities} placeholder="Any origin" />
+              <SelectField label="Destination" value={load!.destination} onChange={load!.onDestinationChange} options={cities} placeholder="Any destination" />
+              <RangeInput label="Weight min (T)" value={load!.weightMin} onChange={load!.onWeightMinChange} type="number" min="0" />
+              <RangeInput label="Weight max (T)" value={load!.weightMax} onChange={load!.onWeightMaxChange} type="number" min="0" />
+              <RangeInput label="Budget min (₹)" value={load!.budgetMin} onChange={load!.onBudgetMinChange} type="number" min="0" />
+              <RangeInput label="Budget max (₹)" value={load!.budgetMax} onChange={load!.onBudgetMaxChange} type="number" min="0" />
+              <DateField label="Pickup from" value={load!.pickupFrom} onChange={load!.onPickupFromChange} />
+              <DateField label="Pickup to" value={load!.pickupTo} onChange={load!.onPickupToChange} />
+            </>
+          )}
+          {hasAdvanced && (
+            <>
+              <RangeInput label="Capacity min (T)" value={capacityMin} onChange={onCapacityMinChange} type="number" min="0" />
+              <RangeInput label="Capacity max (T)" value={capacityMax} onChange={onCapacityMaxChange} type="number" min="0" />
+              <RangeInput label="Price min (₹/ton)" value={priceMin} onChange={onPriceMinChange} type="number" min="0" />
+              <RangeInput label="Price max (₹/ton)" value={priceMax} onChange={onPriceMaxChange} type="number" min="0" />
+              <div>
+                <label className="mb-1 block text-[11px] font-bold text-navy-500">Available from</label>
+                <input
+                  type="date"
+                  value={availableFrom}
+                  onChange={(e) => onAvailableFromChange?.(e.target.value)}
+                  className="h-10 w-full rounded-xl border border-navy-100 bg-canvas px-3 text-sm text-navy-600 focus:border-blue-400"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-[11px] font-bold text-navy-500">Min rating</label>
+                <select
+                  value={ratingMin}
+                  onChange={(e) => onRatingMinChange?.(e.target.value)}
+                  className="h-10 w-full rounded-xl border border-navy-100 bg-canvas px-3 text-sm font-semibold text-navy-500 focus:border-blue-400"
+                >
+                  <option value="">Any</option>
+                  {ratings.map((r) => (
+                    <option key={r} value={r}>★ {r}+</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
           {onReset && (
             <div className="col-span-full flex justify-end">
               <button
@@ -162,6 +216,50 @@ function RangeInput({
       <input
         type={type}
         min={min}
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
+        className="h-10 w-full rounded-xl border border-navy-100 bg-canvas px-3 text-sm text-navy-600 focus:border-blue-400"
+      />
+    </div>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder
+}: {
+  label: string;
+  value?: string;
+  onChange?: (v: string) => void;
+  options: string[];
+  placeholder: string;
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-[11px] font-bold text-navy-500">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
+        className="h-10 w-full rounded-xl border border-navy-100 bg-canvas px-3 text-sm font-semibold text-navy-500 focus:border-blue-400"
+      >
+        <option value="">{placeholder}</option>
+        {options.map((o) => (
+          <option key={o} value={o}>{o}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function DateField({ label, value, onChange }: { label: string; value?: string; onChange?: (v: string) => void }) {
+  return (
+    <div>
+      <label className="mb-1 block text-[11px] font-bold text-navy-500">{label}</label>
+      <input
+        type="date"
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         className="h-10 w-full rounded-xl border border-navy-100 bg-canvas px-3 text-sm text-navy-600 focus:border-blue-400"

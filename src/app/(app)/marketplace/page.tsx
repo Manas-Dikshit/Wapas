@@ -1,13 +1,16 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { PackageSearch } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
 import { Tabs } from '@/components/ui/primitives';
 import { FilterBar } from '@/components/marketplace/filter-bar';
 import { LoadCard, TruckCard } from '@/components/marketplace/cards';
 import { IntermediateStops } from '@/components/marketplace/intermediate-stops';
 import { Button } from '@/components/ui/button';
 import { loads, trucks, routeStats } from '@/lib/mock-data';
+import { cn } from '@/lib/utils';
 
 export default function MarketplacePage() {
   const [mode, setMode] = useState<'loads' | 'trucks'>('loads');
@@ -21,15 +24,44 @@ export default function MarketplacePage() {
   const [availableFrom, setAvailableFrom] = useState('');
   const [ratingMin, setRatingMin] = useState('');
 
+  const [loadOrigin, setLoadOrigin] = useState('');
+  const [loadDestination, setLoadDestination] = useState('');
+  const [weightMin, setWeightMin] = useState('');
+  const [weightMax, setWeightMax] = useState('');
+  const [budgetMin, setBudgetMin] = useState('');
+  const [budgetMax, setBudgetMax] = useState('');
+  const [pickupFrom, setPickupFrom] = useState('');
+  const [pickupTo, setPickupTo] = useState('');
+
   const filteredLoads = useMemo(
     () =>
       loads.filter((l) => {
         const matchesQuery = query ? `${l.title} ${l.originCity} ${l.destinationCity}`.toLowerCase().includes(query.toLowerCase()) : true;
         const matchesCity = city ? l.originCity === city || l.destinationCity === city : true;
         const matchesType = type ? l.truckTypeNeeded === type : true;
-        return matchesQuery && matchesCity && matchesType;
+        const matchesOrigin = loadOrigin ? l.originCity === loadOrigin : true;
+        const matchesDestination = loadDestination ? l.destinationCity === loadDestination : true;
+        const matchesWeightMin = weightMin ? l.weightTons >= Number(weightMin) : true;
+        const matchesWeightMax = weightMax ? l.weightTons <= Number(weightMax) : true;
+        const matchesBudgetMin = budgetMin ? l.budget >= Number(budgetMin) : true;
+        const matchesBudgetMax = budgetMax ? l.budget <= Number(budgetMax) : true;
+        const matchesPickupFrom = pickupFrom ? new Date(l.pickupDate) >= new Date(pickupFrom) : true;
+        const matchesPickupTo = pickupTo ? new Date(l.pickupDate) <= new Date(pickupTo) : true;
+        return (
+          matchesQuery &&
+          matchesCity &&
+          matchesType &&
+          matchesOrigin &&
+          matchesDestination &&
+          matchesWeightMin &&
+          matchesWeightMax &&
+          matchesBudgetMin &&
+          matchesBudgetMax &&
+          matchesPickupFrom &&
+          matchesPickupTo
+        );
       }),
-    [query, city, type]
+    [query, city, type, loadOrigin, loadDestination, weightMin, weightMax, budgetMin, budgetMax, pickupFrom, pickupTo]
   );
 
   const filteredTrucks = useMemo(
@@ -50,7 +82,25 @@ export default function MarketplacePage() {
     [query, city, type, capacityMin, capacityMax, priceMin, priceMax, availableFrom, ratingMin]
   );
 
-  const hasFilters = Boolean(query || city || type || capacityMin || capacityMax || priceMin || priceMax || availableFrom || ratingMin);
+  const hasFilters = Boolean(
+    query ||
+      city ||
+      type ||
+      capacityMin ||
+      capacityMax ||
+      priceMin ||
+      priceMax ||
+      availableFrom ||
+      ratingMin ||
+      loadOrigin ||
+      loadDestination ||
+      weightMin ||
+      weightMax ||
+      budgetMin ||
+      budgetMax ||
+      pickupFrom ||
+      pickupTo
+  );
   const results = mode === 'loads' ? filteredLoads : filteredTrucks;
 
   function resetFilters() {
@@ -63,6 +113,14 @@ export default function MarketplacePage() {
     setPriceMax('');
     setAvailableFrom('');
     setRatingMin('');
+    setLoadOrigin('');
+    setLoadDestination('');
+    setWeightMin('');
+    setWeightMax('');
+    setBudgetMin('');
+    setBudgetMax('');
+    setPickupFrom('');
+    setPickupTo('');
   }
 
   return (
@@ -102,6 +160,24 @@ export default function MarketplacePage() {
         ratingMin={ratingMin}
         onRatingMinChange={setRatingMin}
         onReset={resetFilters}
+        load={{
+          origin: loadOrigin,
+          onOriginChange: setLoadOrigin,
+          destination: loadDestination,
+          onDestinationChange: setLoadDestination,
+          weightMin,
+          onWeightMinChange: setWeightMin,
+          weightMax,
+          onWeightMaxChange: setWeightMax,
+          budgetMin,
+          onBudgetMinChange: setBudgetMin,
+          budgetMax,
+          onBudgetMaxChange: setBudgetMax,
+          pickupFrom,
+          onPickupFromChange: setPickupFrom,
+          pickupTo,
+          onPickupToChange: setPickupTo
+        }}
       />
 
       <div className="scrollbar-none flex gap-3 overflow-x-auto pb-1">
@@ -120,12 +196,19 @@ export default function MarketplacePage() {
           </div>
           <p className="font-display text-base font-bold text-navy-600">No matches found</p>
           <p className="max-w-xs text-sm text-navy-400">
-            {hasFilters ? 'No trucks match your filters. Try widening your capacity, price or availability range.' : 'Try adjusting your filters or search a different city and truck type.'}
+            {mode === 'loads'
+              ? 'No loads match your filters or route. Widen your filters, or post your truck as available so shippers can find you.'
+              : 'No trucks match your filters. Try widening your capacity, price or availability range.'}
           </p>
           {hasFilters && (
             <Button variant="outline" size="sm" onClick={resetFilters} className="mt-1">
-              Clear all filters
+              Widen filters
             </Button>
+          )}
+          {mode === 'loads' && (
+            <Link href="/dashboard/transporter#fleet" className={cn(buttonVariants({ size: 'sm', variant: 'ghost' }), 'gap-1.5')}>
+              Post your truck as available
+            </Link>
           )}
         </div>
       ) : (
