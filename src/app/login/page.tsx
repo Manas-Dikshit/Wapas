@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2, MailCheck } from 'lucide-react';
 import { AuthShell } from '@/components/layout/auth-shell';
 import { Input } from '@/components/ui/input';
@@ -63,41 +64,60 @@ export default function LoginPage() {
     toast.success('Sign-in link sent', { description: `Check ${email} to finish logging in.` });
   }
 
-  if (sent) {
-    return (
-      <AuthShell title="Check your email" subtitle="One more step to log in.">
-        <div className="flex flex-col items-center gap-4 rounded-2xl border border-navy-100 bg-white p-6 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-500">
-            <MailCheck className="h-6 w-6" />
-          </div>
-          <p className="text-sm font-bold text-navy-600">Link sent to {email}</p>
-          <p className="text-xs text-navy-400">
-            Open it on <span className="font-semibold">this same device/browser</span> to finish logging in.
-          </p>
-          <button className="text-xs font-semibold text-blue-500" onClick={() => setSent(false)}>
-            Use a different email
-          </button>
-        </div>
-      </AuthShell>
-    );
-  }
-
   return (
     <AuthShell title="Welcome back" subtitle="Log in to your Wapas account.">
-      <form onSubmit={submit} className="space-y-3">
-        <Input required type="email" placeholder="Work email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <Button type="submit" className="w-full" disabled={loading || !email}>
-          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-          Send sign-in link
-        </Button>
-      </form>
+      <AnimatePresence mode="wait">
+        {sent ? (
+          <motion.div
+            key="sent"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25 }}
+          >
+            <div className="flex flex-col items-center gap-4 rounded-2xl border border-navy-100 bg-white p-6 text-center">
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-500"
+              >
+                <MailCheck className="h-6 w-6" />
+              </motion.div>
+              <p className="text-sm font-bold text-navy-600">Link sent to {email}</p>
+              <p className="text-xs text-navy-400">
+                Open it on <span className="font-semibold">this same device/browser</span> to finish logging in.
+              </p>
+              <button className="text-xs font-semibold text-blue-500" onClick={() => setSent(false)}>
+                Use a different email
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div key="form" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.25 }}>
+            <form onSubmit={submit} className="space-y-3">
+              <Input
+                required
+                type="email"
+                placeholder="Work email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <Button type="submit" className="w-full" disabled={loading || !email}>
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? 'Sending link…' : 'Send sign-in link'}
+              </Button>
+            </form>
 
-      <p className="mt-6 text-center text-sm text-navy-400">
-        New to Wapas?{' '}
-        <Link href="/register" className="font-bold text-blue-500">
-          Create an account
-        </Link>
-      </p>
+            <p className="mt-6 text-center text-sm text-navy-400">
+              New to Wapas?{' '}
+              <Link href="/register" className="font-bold text-blue-500">
+                Create an account
+              </Link>
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AuthShell>
   );
 }
