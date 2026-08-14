@@ -8,25 +8,7 @@ import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { Reveal, Stagger, StaggerItem } from '@/components/ui/motion';
 import { SectionEyebrow } from './sections';
-
-const testimonials = [
-  { name: 'Arjun Mehta', role: 'Fleet Owner, Mehta Logistics', quote: 'Our empty-leg rate dropped from 34% to 11% in two months. Wapas pays for itself every single week.', rating: 5 },
-  { name: 'Priya Raghavan', role: 'Supply Chain Lead, Shreeji Textiles', quote: 'I used to call five brokers for one truck. Now I post a load and get matched transporters in minutes.', rating: 5 },
-  { name: 'Bharat Patel', role: 'Owner, Patel Roadways', quote: 'The escrow payments alone changed how we plan cash flow. No more chasing shippers for money.', rating: 4.8 }
-];
-
-const plans = [
-  { name: 'Starter', price: 'Free', desc: 'For owner-operators getting started', features: ['Up to 2 trucks listed', 'Basic AI matching', 'Standard support', '2% platform fee'], highlighted: false },
-  { name: 'Growth', price: '₹2,499/mo', desc: 'For growing fleets & regular shippers', features: ['Up to 25 trucks or loads', 'Priority AI matching', 'Escrow payments', 'Analytics dashboard', '1.2% platform fee'], highlighted: true },
-  { name: 'Enterprise', price: 'Custom', desc: 'For large fleets & logistics networks', features: ['Unlimited trucks & loads', 'Dedicated account manager', 'API access', 'Custom reporting', 'Negotiated platform fee'], highlighted: false }
-];
-
-const faqs = [
-  { q: 'How does backhaul matching actually work?', a: 'Wapas scores every open load against your truck\'s current location, route, capacity and available date, then ranks matches by fit — factoring in distance, price and reliability.' },
-  { q: 'Is my payment protected?', a: 'Yes. Funds are held in escrow when a booking is confirmed and released to the transporter automatically once delivery is confirmed.' },
-  { q: 'What documents do I need to join?', a: 'Transporters need a GST number, vehicle RC and driving licence. Shippers need a business GST number. Verification usually takes under 24 hours.' },
-  { q: 'Can I use Wapas on mobile?', a: 'Wapas is built mobile-first — every feature works on your phone, and the experience feels like a native app.' }
-];
+import { cta, faqs, plans, testimonials } from '@/lib/landing-content';
 
 export function Testimonials() {
   return (
@@ -93,7 +75,7 @@ export function Pricing() {
                   p.highlighted && 'bg-white text-navy-600 hover:bg-white/90'
                 )}
               >
-                Choose {p.name}
+                {p.cta}
               </Link>
             </StaggerItem>
           ))}
@@ -147,15 +129,14 @@ export function CTA() {
     <section className="py-20">
       <div className="container-app">
         <div className="relative overflow-hidden rounded-xl4 bg-navy-600 px-8 py-16 text-center sm:px-16">
-          <div aria-hidden className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, white 0%, transparent 40%)' }} />
-          <h2 className="relative font-display text-3xl font-extrabold text-white sm:text-4xl">Ready to stop paying for empty miles?</h2>
-          <p className="relative mx-auto mt-4 max-w-xl text-white/75">Join thousands of transporters and shippers already moving freight smarter on Wapas.</p>
+          <h2 className="relative font-display text-3xl font-extrabold text-white sm:text-4xl">{cta.heading}</h2>
+          <p className="relative mx-auto mt-4 max-w-xl text-white/75">{cta.description}</p>
           <div className="relative mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link href="/register" className={cn(buttonVariants({ size: 'lg' }), 'bg-white text-navy-600 hover:bg-white/90 shadow-none')}>
-              Sign up
+            <Link href={cta.primaryCta.href} className={cn(buttonVariants({ size: 'lg' }), 'bg-white text-navy-600 hover:bg-white/90 shadow-none')}>
+              {cta.primaryCta.label}
             </Link>
-            <Link href="/login" className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'border-white/30 bg-transparent text-white hover:bg-white/10')}>
-              Explore the demo
+            <Link href={cta.secondaryCta.href} className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'border-white/30 bg-transparent text-white hover:bg-white/10')}>
+              {cta.secondaryCta.label}
             </Link>
           </div>
         </div>
