@@ -8,6 +8,7 @@ import { cn, formatINR } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { TruckTypeIcon } from '@/components/marketplace/truck-type-icon';
 import { SaveTransporterButton } from '@/components/marketplace/save-transporter-button';
+import { RouteStrip } from '@/components/marketplace/route-strip';
 
 export default function MarketplaceDetailPage({ params }: { params: { id: string } }) {
   const load = loads.find((l) => l.id === params.id);
@@ -37,6 +38,16 @@ export default function MarketplaceDetailPage({ params }: { params: { id: string
               <div className="h-px flex-1 bg-route-line mx-4" />
               <RoutePoint label={load.destinationCity} />
             </div>
+
+            {load.route && (
+              <div className="mt-4 rounded-2xl border border-navy-100 p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-xs font-bold text-navy-600">Full route &amp; intermediate stops</p>
+                  <Badge variant="aqua">Mid-route pickup available</Badge>
+                </div>
+                <RouteStrip route={load.route} />
+              </div>
+            )}
 
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
               <Detail icon={<Weight className="h-4 w-4" />} label="Weight" value={`${load.weightTons}T`} />
@@ -83,6 +94,16 @@ export default function MarketplaceDetailPage({ params }: { params: { id: string
               <div className="h-px flex-1 bg-route-line mx-4" />
               <RoutePoint label={truck.destinationCity} />
             </div>
+
+            {truck.route && (
+              <div className="mt-4 rounded-2xl border border-navy-100 p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-xs font-bold text-navy-600">Full route &amp; intermediate stops</p>
+                  <Badge variant="aqua">Mid-route pickup available</Badge>
+                </div>
+                <RouteStrip route={truck.route} />
+              </div>
+            )}
 
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
               <Detail icon={<Weight className="h-4 w-4" />} label="Capacity" value={`${truck.capacityTons}T`} />

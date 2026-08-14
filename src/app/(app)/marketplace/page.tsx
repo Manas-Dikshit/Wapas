@@ -5,6 +5,7 @@ import { PackageSearch } from 'lucide-react';
 import { Tabs } from '@/components/ui/primitives';
 import { FilterBar } from '@/components/marketplace/filter-bar';
 import { LoadCard, TruckCard } from '@/components/marketplace/cards';
+import { IntermediateStops } from '@/components/marketplace/intermediate-stops';
 import { Button } from '@/components/ui/button';
 import { loads, trucks, routeStats } from '@/lib/mock-data';
 
@@ -35,7 +36,8 @@ export default function MarketplacePage() {
     () =>
       trucks.filter((t) => {
         const matchesQuery = query ? `${t.type} ${t.currentCity} ${t.destinationCity} ${t.transporterName}`.toLowerCase().includes(query.toLowerCase()) : true;
-        const matchesCity = city ? t.currentCity === city || t.destinationCity === city : true;
+        const passesThrough = t.route?.stops.some((s) => s.city === city) ?? false;
+        const matchesCity = city ? t.currentCity === city || t.destinationCity === city || passesThrough : true;
         const matchesType = type ? t.type === type : true;
         const matchesCapMin = capacityMin ? t.capacityTons >= Number(capacityMin) : true;
         const matchesCapMax = capacityMax ? t.capacityTons <= Number(capacityMax) : true;
@@ -133,6 +135,8 @@ export default function MarketplacePage() {
             : filteredTrucks.map((t) => <TruckCard key={t.id} truck={t} />)}
         </div>
       )}
+
+      <IntermediateStops />
     </div>
   );
 }
