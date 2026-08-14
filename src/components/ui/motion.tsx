@@ -16,15 +16,13 @@ export function Reveal({
   className,
   delay = 0,
   y = 16,
-  once = true,
   ...props
-}: { children: React.ReactNode; className?: string; delay?: number; y?: number; once?: boolean } & HTMLMotionProps<'div'>) {
+}: { children: React.ReactNode; className?: string; delay?: number; y?: number } & HTMLMotionProps<'div'>) {
   const reduce = useReducedMotion();
   return (
     <motion.div
       initial={reduce ? false : { opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once, amount: 0.1 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55, ease: EASE, delay }}
       className={className}
       {...props}
@@ -45,8 +43,7 @@ export function Stagger({
   return (
     <motion.div
       initial={reduce ? false : 'hidden'}
-      whileInView="show"
-      viewport={{ once: true, amount: 0.05 }}
+      animate="show"
       variants={{
         hidden: {},
         show: { transition: { staggerChildren: stagger, delayChildren: delay } }

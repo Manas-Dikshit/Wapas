@@ -26,8 +26,8 @@ export function AuthShell({ children, title, subtitle }: { children: React.React
         </Link>
 
         <div className="relative">
-          <h2 className="font-display text-4xl font-extrabold leading-tight">Freight that finds its way back.</h2>
-          <p className="mt-4 max-w-md text-white/70">
+          <h2 className="font-display text-4xl font-extrabold leading-tight text-white">Freight that finds its way back.</h2>
+          <p className="mt-4 max-w-md text-white/90 text-base">
             Join <CountUp value={18000} />+ transporters and shippers already saving on every backhaul leg.
           </p>
           <Stagger className="mt-10 space-y-4">
@@ -37,17 +37,17 @@ export function AuthShell({ children, title, subtitle }: { children: React.React
           </Stagger>
         </div>
 
-        <p className="relative text-xs text-white/40">© 2026 Wapas Technologies Pvt Ltd.</p>
+        <p className="relative text-xs text-white/70">© 2026 Wapas Technologies Pvt Ltd.</p>
       </div>
 
       <div className="flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-16">
         <Reveal className="mx-auto w-full max-w-sm" y={20}>
           <Link href="/" className="mb-8 flex items-center gap-2 lg:hidden">
             <Image src="/logo.png" alt="Wapas" width={32} height={32} className="rounded-lg" />
-            <span className="font-display text-xl font-extrabold text-navy-600">Wapas</span>
+            <span className="font-display text-xl font-extrabold text-navy-900">Wapas</span>
           </Link>
-          <h1 className="font-display text-2xl font-extrabold text-navy-600 sm:text-3xl">{title}</h1>
-          <p className="mt-2 text-sm text-navy-400">{subtitle}</p>
+          <h1 className="font-display text-2xl font-extrabold text-navy-900 sm:text-3xl">{title}</h1>
+          <p className="mt-2 text-sm text-navy-600">{subtitle}</p>
           <div className="mt-8">{children}</div>
         </Reveal>
       </div>
@@ -58,8 +58,8 @@ export function AuthShell({ children, title, subtitle }: { children: React.React
 function Feature({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">{icon}</div>
-      <p className="text-sm text-white/80">{text}</p>
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-white">{icon}</div>
+      <p className="text-sm font-medium text-white">{text}</p>
     </div>
   );
 }

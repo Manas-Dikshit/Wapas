@@ -114,8 +114,8 @@ export default function RegisterPage() {
                         <r.icon className="h-5 w-5" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-bold text-navy-600">{r.title}</p>
-                        <p className="text-xs text-navy-400">{r.desc}</p>
+                        <p className="text-sm font-bold text-navy-900">{r.title}</p>
+                        <p className="text-xs font-medium text-navy-600">{r.desc}</p>
                       </div>
                       <div className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200', active ? 'border-blue-500 bg-blue-500 text-white' : 'border-navy-200')}>
                         <AnimatePresence>
@@ -149,9 +149,9 @@ export default function RegisterPage() {
               </Button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-navy-400">
+            <p className="mt-6 text-center text-sm font-medium text-navy-600">
               Already have an account?{' '}
-              <Link href="/login" className="font-bold text-blue-500">
+              <Link href="/login" className="font-bold text-blue-600 hover:underline">
                 Log in
               </Link>
             </p>
