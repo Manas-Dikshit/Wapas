@@ -8,7 +8,7 @@ export function Progress({ value, className, indicatorClassName }: { value: numb
   return (
     <div className={cn('h-2 w-full overflow-hidden rounded-full bg-navy-100', className)}>
       <div
-        className={cn('h-full rounded-full bg-wapas-gradient transition-all duration-700 ease-out', indicatorClassName)}
+        className={cn('h-full rounded-full bg-blue-500 transition-all duration-700 ease-out', indicatorClassName)}
         style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
       />
     </div>
@@ -21,7 +21,7 @@ export function Avatar({ name, src, className }: { name: string; src?: string; c
     return <img src={src} alt={name} className={cn('h-10 w-10 rounded-full object-cover', className)} />;
   }
   return (
-    <div className={cn('flex h-10 w-10 items-center justify-center rounded-full bg-wapas-gradient text-xs font-bold text-white', className)}>
+    <div className={cn('flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white', className)}>
       {initials(name)}
     </div>
   );
@@ -41,7 +41,7 @@ export function Switch({ checked, onCheckedChange, label }: { checked: boolean; 
       onClick={() => onCheckedChange(!checked)}
       className={cn(
         'relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200',
-        checked ? 'bg-wapas-gradient' : 'bg-navy-100'
+        checked ? 'bg-blue-500' : 'bg-navy-100'
       )}
     >
       <span

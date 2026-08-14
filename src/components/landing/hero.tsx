@@ -11,16 +11,6 @@ import { Stagger, StaggerItem } from '@/components/ui/motion';
 export function Hero() {
   return (
     <section className="relative overflow-hidden pb-20 pt-14 sm:pb-28 sm:pt-20">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-40 right-[-10%] h-[520px] w-[520px] rounded-full opacity-40 blur-3xl"
-        style={{ background: 'radial-gradient(circle, #69C8D4 0%, transparent 70%)' }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-52 left-[-15%] h-[520px] w-[520px] rounded-full opacity-30 blur-3xl"
-        style={{ background: 'radial-gradient(circle, #4A7FCE 0%, transparent 70%)' }}
-      />
 
       <div className="container-app relative grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
         <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }}>
@@ -31,7 +21,7 @@ export function Hero() {
           <h1 className="font-display text-[2.5rem] font-extrabold leading-[1.08] text-navy-600 sm:text-6xl">
             Every empty mile
             <br />
-            is a <span className="bg-wapas-gradient bg-clip-text text-transparent">wasted trip.</span>
+            is a <span className="text-blue-500">wasted trip.</span>
             <br />
             Wapas fixes that.
           </h1>
@@ -160,7 +150,7 @@ function RouteMatchCard() {
       </div>
 
       <div className="mt-6 flex items-center gap-3 rounded-2xl bg-navy-50 p-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-wapas-gradient text-white">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500 text-white">
           <Truck className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">

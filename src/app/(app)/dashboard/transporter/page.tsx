@@ -824,7 +824,7 @@ export default function TransporterDashboardPage() {
       </div>
 
       <div className="card-surface flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:text-left">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-wapas-gradient text-white">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-500 text-white">
           <Package className="h-6 w-6" />
         </div>
         <div className="flex-1">

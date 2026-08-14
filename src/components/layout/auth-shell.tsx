@@ -9,7 +9,7 @@ import { Reveal, Stagger, StaggerItem } from '@/components/ui/motion';
 export function AuthShell({ children, title, subtitle }: { children: React.ReactNode; title: string; subtitle: string }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-wapas-gradient-dark p-12 text-white lg:flex">
+      <div className="relative hidden flex-col justify-between overflow-hidden bg-navy-600 p-12 text-white lg:flex">
         <div
           aria-hidden
           className="pointer-events-none absolute -top-24 right-[-10%] h-[440px] w-[440px] rounded-full opacity-30 blur-3xl"

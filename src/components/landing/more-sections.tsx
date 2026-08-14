@@ -146,7 +146,7 @@ export function CTA() {
   return (
     <section className="py-20">
       <div className="container-app">
-        <div className="relative overflow-hidden rounded-xl4 bg-wapas-gradient-dark px-8 py-16 text-center sm:px-16">
+        <div className="relative overflow-hidden rounded-xl4 bg-navy-600 px-8 py-16 text-center sm:px-16">
           <div aria-hidden className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, white 0%, transparent 40%)' }} />
           <h2 className="relative font-display text-3xl font-extrabold text-white sm:text-4xl">Ready to stop paying for empty miles?</h2>
           <p className="relative mx-auto mt-4 max-w-xl text-white/75">Join thousands of transporters and shippers already moving freight smarter on Wapas.</p>

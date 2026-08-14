@@ -35,7 +35,7 @@ export default function MarketplaceDetailPage({ params }: { params: { id: string
 
             <div className="mt-6 flex items-center justify-between rounded-2xl bg-navy-50 p-5">
               <RoutePoint label={load.originCity} />
-              <div className="h-px flex-1 bg-route-line mx-4" />
+              <div className="h-px flex-1 bg-aqua-400/60 mx-4" />
               <RoutePoint label={load.destinationCity} />
             </div>
 
@@ -91,7 +91,7 @@ export default function MarketplaceDetailPage({ params }: { params: { id: string
 
             <div className="mt-6 flex items-center justify-between rounded-2xl bg-navy-50 p-5">
               <RoutePoint label={truck.currentCity} />
-              <div className="h-px flex-1 bg-route-line mx-4" />
+              <div className="h-px flex-1 bg-aqua-400/60 mx-4" />
               <RoutePoint label={truck.destinationCity} />
             </div>
 

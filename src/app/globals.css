@@ -68,17 +68,7 @@
   }
 
   .btn-gradient {
-    @apply bg-wapas-gradient text-white shadow-glow hover:brightness-[1.06] active:brightness-95 transition-all duration-200;
-  }
-  .btn-gradient::after {
-    content: '';
-    @apply pointer-events-none absolute inset-0;
-    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.35) 50%, transparent 60%);
-    transform: translateX(-120%);
-    transition: transform 0.6s ease;
-  }
-  .btn-gradient:hover::after {
-    transform: translateX(120%);
+    @apply bg-blue-500 text-white shadow-floating hover:bg-blue-600 active:bg-blue-700 transition-all duration-200;
   }
 }
 

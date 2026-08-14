@@ -116,7 +116,7 @@ export function AiRecommendations({
   return (
     <div className="card-surface">
       <div className="flex items-center gap-2 p-5 sm:p-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-wapas-gradient text-white">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-500 text-white">
           <Sparkles className="h-4 w-4" />
         </div>
         <h3 className="font-display text-base font-bold text-navy-600">AI recommended loads</h3>

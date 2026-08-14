@@ -20,7 +20,7 @@ export default function WalletPage() {
         <p className="mt-1 text-sm text-navy-400">Manage payouts, escrow and transaction history.</p>
       </div>
 
-      <div className="relative overflow-hidden rounded-xl4 bg-wapas-gradient-dark p-6 text-white sm:p-8">
+      <div className="relative overflow-hidden rounded-xl4 bg-navy-600 p-6 text-white sm:p-8">
         <div aria-hidden className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
         <p className="text-xs font-semibold text-white/60">Available balance</p>
         <p className="mt-2 font-display text-4xl font-extrabold">{formatINR(balance)}</p>

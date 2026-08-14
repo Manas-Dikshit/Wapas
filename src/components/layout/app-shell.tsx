@@ -197,7 +197,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           const active = pathname.startsWith(item.href);
           if (item.isFab) {
             return (
-              <Link key={item.href} href={item.href} className="relative -mt-8 flex h-14 w-14 items-center justify-center rounded-full bg-wapas-gradient shadow-glow">
+              <Link key={item.href} href={item.href} className="relative -mt-8 flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 shadow-floating">
                 <item.icon className="h-6 w-6 text-white" strokeWidth={2.5} />
               </Link>
             );

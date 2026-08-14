@@ -110,7 +110,7 @@ export default function RegisterPage() {
                         active ? 'border-blue-400 bg-blue-50' : 'border-navy-100 bg-white hover:border-navy-200'
                       )}
                     >
-                      <div className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all duration-200', active ? 'bg-wapas-gradient text-white' : 'bg-navy-50 text-navy-400')}>
+                      <div className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all duration-200', active ? 'bg-blue-500 text-white' : 'bg-navy-50 text-navy-400')}>
                         <r.icon className="h-5 w-5" />
                       </div>
                       <div className="min-w-0 flex-1">

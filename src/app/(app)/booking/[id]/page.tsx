@@ -42,7 +42,7 @@ export default function BookingPage({ params }: { params: { id: string } }) {
             <div
               className={cn(
                 'flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors',
-                i < step ? 'bg-emerald-500 text-white' : i === step ? 'bg-wapas-gradient text-white' : 'bg-navy-100 text-navy-400'
+                i < step ? 'bg-emerald-500 text-white' : i === step ? 'bg-blue-500 text-white' : 'bg-navy-100 text-navy-400'
               )}
             >
               {i < step ? <Check className="h-4 w-4" /> : i + 1}

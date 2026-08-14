@@ -68,7 +68,7 @@ export default function AnalyticsPage() {
                   <span className="text-xs text-navy-400">{r.trips} trips</span>
                 </div>
                 <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-navy-100">
-                  <div className="h-full rounded-full bg-wapas-gradient" style={{ width: `${r.savingsPct * 2.5}%` }} />
+                  <div className="h-full rounded-full bg-blue-500" style={{ width: `${r.savingsPct * 2.5}%` }} />
                 </div>
                 <p className="mt-1 text-xs font-bold text-emerald-600">{r.savingsPct}% cost savings</p>
               </div>

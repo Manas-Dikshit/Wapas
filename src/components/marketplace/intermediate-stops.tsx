@@ -109,7 +109,7 @@ function CorridorCard({ route }: { route: Route }) {
                     className={cn(
                       'relative z-10 mt-1.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2',
                       isTerminal
-                        ? 'border-white bg-wapas-gradient shadow-glow'
+                        ? 'border-white bg-blue-500'
                         : isJunction
                           ? 'border-blue-400 bg-white'
                           : 'border-aqua-400 bg-aqua-50'
