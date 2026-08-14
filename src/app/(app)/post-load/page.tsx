@@ -1,22 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { AlertTriangle, Loader2, Sparkles } from 'lucide-react';
-import { cities } from '@/lib/mock-data';
+import { AlertTriangle, Loader2, MapPin, Sparkles } from 'lucide-react';
+import { cities, routeBetween } from '@/lib/mock-data';
 import { useCurrentProfile } from '@/lib/hooks/use-current-profile';
 import { createClient } from '@/lib/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { isTruckType, truckTypeMeta } from '@/lib/truck-types';
 import { formatINR } from '@/lib/utils';
+import { RouteStrip } from '@/components/marketplace/route-strip';
 
 const truckTypes = ['Open Body', 'Container', 'Trailer', 'Refrigerated', 'Tanker', 'Mini Truck'];
 const categories = ['Textiles', 'FMCG', 'Perishables', 'Automotive', 'Construction', 'Agri-commodities', 'Pharma', 'Electronics'];
 
 export default function PostLoadPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { profile } = useCurrentProfile();
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -25,12 +27,14 @@ export default function PostLoadPage() {
     title: '',
     category: categories[0],
     weight: '',
-    origin: cities[0],
-    destination: cities[1],
+    origin: searchParams.get('origin') && cities.includes(searchParams.get('origin')!) ? searchParams.get('origin')! : cities[0],
+    destination: searchParams.get('destination') && cities.includes(searchParams.get('destination')!) ? searchParams.get('destination')! : cities[1],
     pickupDate: '',
     budget: '',
     truckType: truckTypes[0]
   });
+
+  const suggestedRoute = useMemo(() => routeBetween(form.origin, form.destination), [form.origin, form.destination]);
 
   const typicalPerTon = isTruckType(form.truckType) ? truckTypeMeta[form.truckType].typicalPricePerTon : 0;
   const typicalCost = typicalPerTon * Number(form.weight || 0);
@@ -147,6 +151,20 @@ export default function PostLoadPage() {
             </select>
           </Field>
         </div>
+
+        {suggestedRoute && (
+          <div className="rounded-2xl border border-aqua-200 bg-aqua-50 p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-aqua-600" />
+              <p className="text-xs font-bold text-navy-600">Known corridor detected</p>
+              <span className="ml-auto text-[11px] font-semibold text-navy-400">{suggestedRoute.distanceKm} km</span>
+            </div>
+            <RouteStrip route={suggestedRoute} />
+            <p className="mt-3 text-[11px] text-navy-400">
+              Shippers can also request pickup at any intermediate stop along this route — not just the origin.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Pickup date">

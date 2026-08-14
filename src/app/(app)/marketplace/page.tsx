@@ -35,7 +35,8 @@ export default function MarketplacePage() {
     () =>
       trucks.filter((t) => {
         const matchesQuery = query ? `${t.type} ${t.currentCity} ${t.destinationCity} ${t.transporterName}`.toLowerCase().includes(query.toLowerCase()) : true;
-        const matchesCity = city ? t.currentCity === city || t.destinationCity === city : true;
+        const passesThrough = t.route?.stops.some((s) => s.city === city) ?? false;
+        const matchesCity = city ? t.currentCity === city || t.destinationCity === city || passesThrough : true;
         const matchesType = type ? t.type === type : true;
         const matchesCapMin = capacityMin ? t.capacityTons >= Number(capacityMin) : true;
         const matchesCapMax = capacityMax ? t.capacityTons <= Number(capacityMax) : true;

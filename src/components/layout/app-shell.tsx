@@ -15,7 +15,8 @@ import {
   ShieldCheck,
   Menu,
   Search,
-  Plus
+  Plus,
+  Map
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,7 @@ import { buttonVariants } from '@/components/ui/button';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/marketplace', label: 'Marketplace', icon: Store },
+  { href: '/routes', label: 'Routes', icon: Map },
   { href: '/bookings', label: 'Bookings', icon: Truck },
   { href: '/wallet', label: 'Wallet', icon: Wallet },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },

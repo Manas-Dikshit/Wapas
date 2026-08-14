@@ -118,6 +118,21 @@ export type Database = {
         Insert: Partial<Database['public']['Tables']['tracking_events']['Row']> & { booking_id: string; status_label: string };
         Update: Partial<Database['public']['Tables']['tracking_events']['Row']>;
       };
+      route_waypoints: {
+        Row: {
+          id: string;
+          truck_id: string | null;
+          load_id: string | null;
+          seq: number;
+          city: string;
+          state: string | null;
+          km_from_origin: number | null;
+          is_highway_junction: boolean;
+          created_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['route_waypoints']['Row']> & { seq: number; city: string };
+        Update: Partial<Database['public']['Tables']['route_waypoints']['Row']>;
+      };
     };
   };
 };

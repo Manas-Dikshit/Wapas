@@ -16,6 +16,21 @@ export interface Profile {
 
 export type TruckType = 'Open Body' | 'Container' | 'Trailer' | 'Refrigerated' | 'Tanker' | 'Mini Truck';
 
+export interface RouteStop {
+  city: string;
+  state?: string;
+  kmFromOrigin: number;
+  isHighwayJunction?: boolean;
+}
+
+export interface Route {
+  originCity: string;
+  destinationCity: string;
+  distanceKm: number;
+  highway: string;
+  stops: RouteStop[];
+}
+
 export interface Truck {
   id: string;
   regNumber: string;
@@ -32,6 +47,7 @@ export interface Truck {
   photoSeed: string;
   status: 'available' | 'booked' | 'in-transit' | 'maintenance';
   matchScore?: number;
+  route?: Route;
 }
 
 export interface Load {
@@ -50,6 +66,7 @@ export interface Load {
   distanceKm: number;
   trending?: boolean;
   aiRecommended?: boolean;
+  route?: Route;
 }
 
 export interface Booking {

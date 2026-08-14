@@ -1,4 +1,8 @@
-import type { Booking, Load, NotificationItem, Profile, RouteStat, Transaction, Truck } from './types';
+import type { Booking, Load, NotificationItem, Profile, Route, RouteStat, Transaction, Truck } from './types';
+
+export function routeBetween(origin: string, destination: string): Route | undefined {
+  return routes[`${origin}→${destination}`];
+}
 
 export const currentProfile: Profile = {
   id: 'usr_001',
@@ -26,7 +30,8 @@ export const trucks: Truck[] = [
   { id: 'trk_105', regNumber: 'TN09 BQ 7734', type: 'Container', capacityTons: 16, transporterId: 'usr_007', transporterName: 'Coimbatore Freight Co', transporterRating: 4.6, currentCity: 'Coimbatore', destinationCity: 'Chennai', availableFrom: '2026-08-08', pricePerTon: 1340, emptyLeg: true, photoSeed: 'container-2', status: 'available', matchScore: 90 },
   { id: 'trk_106', regNumber: 'MP09 CX 1190', type: 'Tanker', capacityTons: 20, transporterId: 'usr_008', transporterName: 'Indore Tankers Ltd', transporterRating: 4.2, currentCity: 'Indore', destinationCity: 'Nagpur', availableFrom: '2026-08-09', pricePerTon: 1560, emptyLeg: false, photoSeed: 'tanker-1', status: 'available', matchScore: 82 },
   { id: 'trk_107', regNumber: 'MH14 FZ 3302', type: 'Mini Truck', capacityTons: 3, transporterId: 'usr_001', transporterName: 'Mehta Logistics', transporterRating: 4.7, currentCity: 'Pune', destinationCity: 'Nashik', availableFrom: '2026-08-05', pricePerTon: 1680, emptyLeg: true, photoSeed: 'mini-1', status: 'available', matchScore: 79 },
-  { id: 'trk_108', regNumber: 'WB06 DL 9981', type: 'Container', capacityTons: 22, transporterId: 'usr_009', transporterName: 'Kolkata Cargo Hub', transporterRating: 4.5, currentCity: 'Kolkata', destinationCity: 'Lucknow', availableFrom: '2026-08-10', pricePerTon: 1290, emptyLeg: true, photoSeed: 'container-3', status: 'available', matchScore: 87 }
+  { id: 'trk_108', regNumber: 'WB06 DL 9981', type: 'Container', capacityTons: 22, transporterId: 'usr_009', transporterName: 'Kolkata Cargo Hub', transporterRating: 4.5, currentCity: 'Kolkata', destinationCity: 'Lucknow', availableFrom: '2026-08-10', pricePerTon: 1290, emptyLeg: true, photoSeed: 'container-3', status: 'available', matchScore: 87 },
+  { id: 'trk_109', regNumber: 'OD02 BBS 7710', type: 'Open Body', capacityTons: 20, transporterId: 'usr_020', transporterName: 'Odisha Cargo Lines', transporterRating: 4.6, currentCity: 'Bhubaneswar', destinationCity: 'Delhi', availableFrom: '2026-08-11', pricePerTon: 1320, emptyLeg: true, photoSeed: 'open-2', status: 'available', matchScore: 92 }
 ];
 
 export const loads: Load[] = [
@@ -106,3 +111,122 @@ export const adminStats = [
   { label: 'GMV (MTD)', value: '₹4.7Cr', delta: '+16.2%' },
   { label: 'Disputes open', value: '7', delta: '-3 vs last week' }
 ];
+
+// ---------------------------------------------------------------------------
+// routes — curated highway corridors with ordered intermediate stops.
+// Keyed by "Origin→Destination" and consumed via routeBetween(). The stops
+// are the "middle path" a truck travels, enabling mid-route pickup / return
+// (backhaul) orders at any city along the way.
+// ---------------------------------------------------------------------------
+export const routes: Record<string, Route> = {
+  'Bhubaneswar→Delhi': {
+    originCity: 'Bhubaneswar',
+    destinationCity: 'Delhi',
+    distanceKm: 1730,
+    highway: 'NH-16 → NH-49 → NH-53 → NH-44',
+    stops: [
+      { city: 'Bhubaneswar', state: 'Odisha', kmFromOrigin: 0, isHighwayJunction: true },
+      { city: 'Cuttack', state: 'Odisha', kmFromOrigin: 27, isHighwayJunction: true },
+      { city: 'Sambalpur', state: 'Odisha', kmFromOrigin: 310 },
+      { city: 'Bargarh', state: 'Odisha', kmFromOrigin: 375 },
+      { city: 'Raipur', state: 'Chhattisgarh', kmFromOrigin: 500, isHighwayJunction: true },
+      { city: 'Bilaspur', state: 'Chhattisgarh', kmFromOrigin: 660 },
+      { city: 'Katni', state: 'Madhya Pradesh', kmFromOrigin: 1020 },
+      { city: 'Jhansi', state: 'Uttar Pradesh', kmFromOrigin: 1380, isHighwayJunction: true },
+      { city: 'Agra', state: 'Uttar Pradesh', kmFromOrigin: 1560, isHighwayJunction: true },
+      { city: 'Delhi', state: 'Delhi', kmFromOrigin: 1730, isHighwayJunction: true }
+    ]
+  },
+  'Mumbai→Delhi': {
+    originCity: 'Mumbai',
+    destinationCity: 'Delhi',
+    distanceKm: 1430,
+    highway: 'NH-48',
+    stops: [
+      { city: 'Mumbai', state: 'Maharashtra', kmFromOrigin: 0, isHighwayJunction: true },
+      { city: 'Nashik', state: 'Maharashtra', kmFromOrigin: 170, isHighwayJunction: true },
+      { city: 'Dhule', state: 'Maharashtra', kmFromOrigin: 320 },
+      { city: 'Indore', state: 'Madhya Pradesh', kmFromOrigin: 590, isHighwayJunction: true },
+      { city: 'Gwalior', state: 'Madhya Pradesh', kmFromOrigin: 980 },
+      { city: 'Agra', state: 'Uttar Pradesh', kmFromOrigin: 1190, isHighwayJunction: true },
+      { city: 'Delhi', state: 'Delhi', kmFromOrigin: 1430, isHighwayJunction: true }
+    ]
+  },
+  'Bengaluru→Delhi': {
+    originCity: 'Bengaluru',
+    destinationCity: 'Delhi',
+    distanceKm: 2120,
+    highway: 'NH-44',
+    stops: [
+      { city: 'Bengaluru', state: 'Karnataka', kmFromOrigin: 0, isHighwayJunction: true },
+      { city: 'Chitradurga', state: 'Karnataka', kmFromOrigin: 200 },
+      { city: 'Hyderabad', state: 'Telangana', kmFromOrigin: 570, isHighwayJunction: true },
+      { city: 'Nagpur', state: 'Maharashtra', kmFromOrigin: 1080, isHighwayJunction: true },
+      { city: 'Jhansi', state: 'Uttar Pradesh', kmFromOrigin: 1700, isHighwayJunction: true },
+      { city: 'Delhi', state: 'Delhi', kmFromOrigin: 2120, isHighwayJunction: true }
+    ]
+  },
+  'Chennai→Bengaluru': {
+    originCity: 'Chennai',
+    destinationCity: 'Bengaluru',
+    distanceKm: 346,
+    highway: 'NH-48',
+    stops: [
+      { city: 'Chennai', state: 'Tamil Nadu', kmFromOrigin: 0, isHighwayJunction: true },
+      { city: 'Kanchipuram', state: 'Tamil Nadu', kmFromOrigin: 70 },
+      { city: 'Vellore', state: 'Tamil Nadu', kmFromOrigin: 130, isHighwayJunction: true },
+      { city: 'Krishnagiri', state: 'Tamil Nadu', kmFromOrigin: 250 },
+      { city: 'Hosur', state: 'Tamil Nadu', kmFromOrigin: 290 },
+      { city: 'Bengaluru', state: 'Karnataka', kmFromOrigin: 346, isHighwayJunction: true }
+    ]
+  },
+  'Jaipur→Delhi': {
+    originCity: 'Jaipur',
+    destinationCity: 'Delhi',
+    distanceKm: 281,
+    highway: 'NH-48',
+    stops: [
+      { city: 'Jaipur', state: 'Rajasthan', kmFromOrigin: 0, isHighwayJunction: true },
+      { city: 'Shahpura', state: 'Rajasthan', kmFromOrigin: 60 },
+      { city: 'Kotputli', state: 'Rajasthan', kmFromOrigin: 120 },
+      { city: 'Manesar', state: 'Haryana', kmFromOrigin: 230 },
+      { city: 'Delhi', state: 'Delhi', kmFromOrigin: 281, isHighwayJunction: true }
+    ]
+  },
+  'Kolkata→Lucknow': {
+    originCity: 'Kolkata',
+    destinationCity: 'Lucknow',
+    distanceKm: 985,
+    highway: 'NH-19 → NH-27',
+    stops: [
+      { city: 'Kolkata', state: 'West Bengal', kmFromOrigin: 0, isHighwayJunction: true },
+      { city: 'Bardhaman', state: 'West Bengal', kmFromOrigin: 100 },
+      { city: 'Durgapur', state: 'West Bengal', kmFromOrigin: 170 },
+      { city: 'Asansol', state: 'West Bengal', kmFromOrigin: 220 },
+      { city: 'Dhanbad', state: 'Jharkhand', kmFromOrigin: 290 },
+      { city: 'Varanasi', state: 'Uttar Pradesh', kmFromOrigin: 680, isHighwayJunction: true },
+      { city: 'Prayagraj', state: 'Uttar Pradesh', kmFromOrigin: 820, isHighwayJunction: true },
+      { city: 'Lucknow', state: 'Uttar Pradesh', kmFromOrigin: 985, isHighwayJunction: true }
+    ]
+  },
+  'Nagpur→Indore': {
+    originCity: 'Nagpur',
+    destinationCity: 'Indore',
+    distanceKm: 494,
+    highway: 'NH-47',
+    stops: [
+      { city: 'Nagpur', state: 'Maharashtra', kmFromOrigin: 0, isHighwayJunction: true },
+      { city: 'Hinganghat', state: 'Maharashtra', kmFromOrigin: 55 },
+      { city: 'Wardha', state: 'Maharashtra', kmFromOrigin: 75 },
+      { city: 'Betul', state: 'Madhya Pradesh', kmFromOrigin: 260 },
+      { city: 'Harda', state: 'Madhya Pradesh', kmFromOrigin: 330 },
+      { city: 'Khandwa', state: 'Madhya Pradesh', kmFromOrigin: 405, isHighwayJunction: true },
+      { city: 'Indore', state: 'Madhya Pradesh', kmFromOrigin: 494, isHighwayJunction: true }
+    ]
+  }
+};
+
+// Attach routes to existing listings so the detail page and cards can render
+// the corridor. Falls back gracefully (route stays undefined) if unmapped.
+trucks.forEach((t) => (t.route = routeBetween(t.currentCity, t.destinationCity ?? '') ?? t.route));
+loads.forEach((l) => (l.route = routeBetween(l.originCity, l.destinationCity) ?? l.route));

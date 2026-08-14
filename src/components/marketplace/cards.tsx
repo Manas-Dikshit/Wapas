@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatINR } from '@/lib/utils';
 import { TruckTypeIcon } from '@/components/marketplace/truck-type-icon';
 import { SaveTransporterButton } from '@/components/marketplace/save-transporter-button';
+import { RouteHighway } from '@/components/marketplace/route-strip';
 
 export function LoadCard({ load }: { load: Load }) {
   return (
@@ -27,6 +28,12 @@ export function LoadCard({ load }: { load: Load }) {
         {load.destinationCity}
         <span className="ml-auto text-xs font-normal text-navy-300">{load.distanceKm} km</span>
       </div>
+      {load.route && (
+        <div className="mt-2 flex items-center gap-2">
+          <RouteHighway route={load.route} />
+          <Badge variant="aqua">{load.route.stops.length - 2} mid stops</Badge>
+        </div>
+      )}
 
       <div className="mt-4 flex items-center gap-4 text-xs text-navy-400">
         <span className="flex items-center gap-1"><Weight className="h-3.5 w-3.5" /> {load.weightTons}T</span>
@@ -75,6 +82,12 @@ export function TruckCard({ truck }: { truck: Truck }) {
         <div className="mt-4 text-xs text-navy-400">
           Available from {new Date(truck.availableFrom).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} · ★ {truck.transporterRating}
         </div>
+        {truck.route && (
+          <div className="mt-2 flex items-center gap-2">
+            <RouteHighway route={truck.route} />
+            <Badge variant="aqua">{truck.route.stops.length - 2} mid stops</Badge>
+          </div>
+        )}
 
         <div className="mt-4 flex items-center justify-between border-t border-navy-100 pt-4">
           <p className="font-display text-lg font-extrabold text-navy-600">{formatINR(truck.pricePerTon)}<span className="text-xs font-medium text-navy-400">/ton</span></p>
