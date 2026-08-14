@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Loader2, Package, Plus, Search, TrendingUp, Truck as TruckIcon } from 'lucide-react';
+import { AlertTriangle, Check, Loader2, Package, Pencil, Plus, Power, Search, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { RevenueChart, UtilizationChart } from '@/components/dashboard/charts';
@@ -14,6 +14,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton, Switch } from '@/components/ui/primitives';
+import { TruckTypeIcon } from '@/components/marketplace/truck-type-icon';
 
 const truckTypes = ['Open Body', 'Container', 'Trailer', 'Refrigerated', 'Tanker', 'Mini Truck'] as const;
 const fleetCities = [
@@ -67,6 +68,14 @@ type RecommendationRow = {
   truck_reg_number: string;
 };
 
+type DocumentRow = {
+  id: string;
+  truck_id: string | null;
+  doc_type: 'gst' | 'pan' | 'rc' | 'fitness' | 'driving_license';
+  expires_at: string | null;
+  status: 'pending' | 'verified' | 'rejected';
+};
+
 const truckStatusVariant = {
   available: 'success',
   booked: 'blue',
@@ -81,8 +90,35 @@ export default function TransporterDashboardPage() {
   const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [txns, setTxns] = useState<TxnRow[]>([]);
   const [recommendations, setRecommendations] = useState<RecommendationRow[]>([]);
+  const [documents, setDocuments] = useState<DocumentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const [editingTruckId, setEditingTruckId] = useState<string | null>(null);
+  const [editTruckForm, setEditTruckForm] = useState<{
+    reg_number: string;
+    type: string;
+    capacity_tons: string;
+    current_city: string;
+    destination_city: string;
+    available_from: string;
+    price_per_ton: string;
+    empty_leg: boolean;
+  }>({
+    reg_number: '',
+    type: truckTypes[0],
+    capacity_tons: '',
+    current_city: fleetCities[0],
+    destination_city: '',
+    available_from: '',
+    price_per_ton: '',
+    empty_leg: false
+  });
+  const [acceptingLoadId, setAcceptingLoadId] = useState<string | null>(null);
+  const [acceptTruckId, setAcceptTruckId] = useState<string>('');
+  const [accepting, setAccepting] = useState(false);
+  const [acceptError, setAcceptError] = useState('');
+  const [mutationLoading, setMutationLoading] = useState(false);
 
   const [showTruckForm, setShowTruckForm] = useState(false);
   const [savingTruck, setSavingTruck] = useState(false);
@@ -128,7 +164,7 @@ export default function TransporterDashboardPage() {
     const transporterId = profile.id;
 
     async function load() {
-      const [trucksRes, bookingsRes, txnRes, recsRes] = await Promise.all([
+      const [trucksRes, bookingsRes, txnRes, recsRes, docsRes] = await Promise.all([
         sb
           .from('trucks')
           .select('id, reg_number, type, capacity_tons, current_city, destination_city, available_from, price_per_ton, empty_leg, status, created_at')
@@ -153,7 +189,12 @@ export default function TransporterDashboardPage() {
           .eq('transporter_id', transporterId)
           .order('match_score', { ascending: false })
           .limit(6)
-          .then((res) => res as unknown as { data: RecommendationRow[] | null; error: unknown })
+          .then((res) => res as unknown as { data: RecommendationRow[] | null; error: unknown }),
+        sb
+          .from('transporter_documents')
+          .select('id, truck_id, doc_type, expires_at, status')
+          .eq('transporter_id', transporterId)
+          .then((res) => res as unknown as { data: DocumentRow[] | null; error: unknown })
       ]);
 
       if (!active) return;
@@ -161,6 +202,7 @@ export default function TransporterDashboardPage() {
       setBookings(bookingsRes.data ?? []);
       setTxns(txnRes.data ?? []);
       setRecommendations(recsRes.data ?? []);
+      setDocuments(docsRes.data ?? []);
       setLoading(false);
     }
 
@@ -316,6 +358,152 @@ export default function TransporterDashboardPage() {
     setRefreshKey((k) => k + 1);
   }
 
+  const availableTrucks = useMemo(() => trucks.filter((t) => t.status === 'available'), [trucks]);
+
+  const expiringDocs = useMemo(() => {
+    const windowDays = 14;
+    const today = new Date();
+    return documents.filter((d) => {
+      if (!d.expires_at) return false;
+      const expires = new Date(d.expires_at);
+      const days = Math.ceil((expires.getTime() - today.getTime()) / 86400000);
+      return d.doc_type === 'fitness' || d.doc_type === 'driving_license' ? days <= windowDays : false;
+    });
+  }, [documents]);
+
+  const expiringByTruck = useMemo(() => {
+    const map = new Map<string, { days: number; docType: string }>();
+    for (const d of expiringDocs) {
+      if (!d.truck_id) continue;
+      const days = Math.max(0, Math.ceil((new Date(d.expires_at!).getTime() - Date.now()) / 86400000));
+      map.set(d.truck_id, { days, docType: d.doc_type === 'fitness' ? 'fitness' : 'licence' });
+    }
+    return map;
+  }, [expiringDocs]);
+
+  async function startEdit(t: TruckRow) {
+    setEditingTruckId(t.id);
+    setEditTruckForm({
+      reg_number: t.reg_number,
+      type: t.type,
+      capacity_tons: String(t.capacity_tons),
+      current_city: t.current_city,
+      destination_city: t.destination_city ?? '',
+      available_from: t.available_from ?? '',
+      price_per_ton: String(t.price_per_ton),
+      empty_leg: t.empty_leg
+    });
+  }
+
+  async function saveTruckEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!supabase || !profile || !editingTruckId) return;
+    setMutationLoading(true);
+    const { error } = await supabase
+      .from('trucks')
+      .update({
+        reg_number: editTruckForm.reg_number.trim(),
+        type: editTruckForm.type,
+        capacity_tons: Number(editTruckForm.capacity_tons),
+        current_city: editTruckForm.current_city,
+        destination_city: editTruckForm.destination_city || null,
+        available_from: editTruckForm.available_from || null,
+        price_per_ton: Number(editTruckForm.price_per_ton),
+        empty_leg: editTruckForm.empty_leg
+      })
+      .eq('id', editingTruckId)
+      .eq('transporter_id', profile.id);
+    setMutationLoading(false);
+    if (error) {
+      toast.error("Couldn't update truck", { description: error.message });
+      return;
+    }
+    toast.success('Truck updated');
+    setEditingTruckId(null);
+    setRefreshKey((k) => k + 1);
+  }
+
+  async function deactivateTruck(t: TruckRow) {
+    if (!supabase || !profile || t.status !== 'available') {
+      toast.error('Cannot deactivate', { description: 'This truck has an active trip. Deactivate only when it is available.' });
+      return;
+    }
+    setMutationLoading(true);
+    const { error } = await supabase
+      .from('trucks')
+      .update({ status: 'maintenance' })
+      .eq('id', t.id)
+      .eq('transporter_id', profile.id);
+    setMutationLoading(false);
+    if (error) {
+      toast.error("Couldn't deactivate truck", { description: error.message });
+      return;
+    }
+    toast.success('Truck moved to maintenance');
+    setRefreshKey((k) => k + 1);
+  }
+
+  async function acceptLoad(rec: RecommendationRow) {
+    if (!supabase || !profile || !acceptTruckId) {
+      setAcceptError('Select a truck from your available fleet.');
+      return;
+    }
+    const truck = availableTrucks.find((t) => t.id === acceptTruckId);
+    if (!truck) {
+      setAcceptError('Select a valid truck from your available fleet.');
+      return;
+    }
+    if (Number(truck.capacity_tons) < Number(rec.weight_tons)) {
+      setAcceptError(`Your selected truck (${Number(truck.capacity_tons)} T) can't carry this ${Number(rec.weight_tons)} T load. Pick a larger truck.`);
+      return;
+    }
+    setAccepting(true);
+    setAcceptError('');
+    const truckRes = await supabase.from('trucks').select('status').eq('id', truck.id).maybeSingle();
+    const current = truckRes.data as { status: TruckRow['status'] } | null;
+    if (!current || current.status !== 'available') {
+      setAccepting(false);
+      setAcceptError('This truck is already assigned (booked/in-transit). Choose an available truck.');
+      return;
+    }
+    const loadRes = await supabase.from('loads').select('shipper_id').eq('id', rec.load_id).maybeSingle();
+    const loadRow = loadRes.data as { shipper_id: string } | null;
+    if (!loadRow) {
+      setAccepting(false);
+      setAcceptError('This load is no longer available on the marketplace.');
+      return;
+    }
+    const { error } = await supabase.from('bookings').insert({
+      load_id: rec.load_id,
+      truck_id: truck.id,
+      shipper_id: loadRow.shipper_id,
+      transporter_id: profile.id,
+      amount: Number(rec.budget)
+    });
+    setAccepting(false);
+    if (error) {
+      setAcceptError(error.message);
+      return;
+    }
+    toast.success('Load accepted', { description: 'Booking created — the shipper has been notified.' });
+    setAcceptingLoadId(null);
+    setAcceptTruckId('');
+    setRefreshKey((k) => k + 1);
+  }
+
+  async function updateBookingStatus(id: string, next: 'in-transit' | 'delivered') {
+    if (!supabase || !profile) return;
+    setMutationLoading(true);
+    const { error } = await supabase.from('bookings').update({ status: next }).eq('id', id).eq('transporter_id', profile.id);
+    setMutationLoading(false);
+    if (error) {
+      toast.error("Couldn't update booking", { description: error.message });
+      return;
+    }
+    toast.success(next === 'delivered' ? 'Booking delivered' : 'Trip started');
+    setRefreshKey((k) => k + 1);
+  }
+
   return (
     <div className="space-y-6 pb-6 animate-fade-up">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -332,6 +520,19 @@ export default function TransporterDashboardPage() {
           </Link>
         </div>
       </div>
+
+      {expiringDocs.length > 0 && (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+          <div className="flex-1 text-sm text-amber-700">
+            <p className="font-bold">{expiringDocs.length} document{expiringDocs.length > 1 ? 's' : ''} expiring within 14 days.</p>
+            <p className="text-xs">Renew the fitness certificate / driving licence in Documents to keep your fleet active.</p>
+          </div>
+          <Link href="/profile" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'shrink-0')}>
+            Manage documents
+          </Link>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {fetching
@@ -384,7 +585,7 @@ export default function TransporterDashboardPage() {
         </div>
       </div>
 
-      <div className="card-surface">
+      <div id="fleet" className="card-surface scroll-mt-24">
         <div className="flex items-center justify-between p-5 sm:p-6">
           <div>
             <h3 className="font-display text-base font-bold text-navy-600">Your fleet</h3>
@@ -454,21 +655,95 @@ export default function TransporterDashboardPage() {
           </p>
         ) : (
           <div className="divide-y divide-navy-100">
-            {trucks.map((t) => (
-              <div key={t.id} className="flex items-center gap-4 px-5 py-4 sm:px-6">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-navy-50 text-navy-500">
-                  <TruckIcon className="h-4 w-4" />
+            {trucks.map((t) => {
+              const isEditing = editingTruckId === t.id;
+              const expiry = expiringByTruck.get(t.id);
+              return (
+                <div key={t.id} className="px-5 py-4 sm:px-6">
+                  {isEditing ? (
+                    <form onSubmit={saveTruckEdit} className="grid gap-3 sm:grid-cols-2">
+                      <Field label="Registration number">
+                        <Input required value={editTruckForm.reg_number} onChange={(e) => setEditTruckForm({ ...editTruckForm, reg_number: e.target.value })} />
+                      </Field>
+                      <Field label="Truck type">
+                        <select className="h-12 w-full rounded-2xl border border-navy-100 bg-white px-4 text-sm text-navy-700 focus:border-blue-400" value={editTruckForm.type} onChange={(e) => setEditTruckForm({ ...editTruckForm, type: e.target.value })}>
+                          {truckTypes.map((ty) => <option key={ty}>{ty}</option>)}
+                        </select>
+                      </Field>
+                      <Field label="Capacity (tons)">
+                        <Input required type="number" min={0.5} step={0.5} value={editTruckForm.capacity_tons} onChange={(e) => setEditTruckForm({ ...editTruckForm, capacity_tons: e.target.value })} />
+                      </Field>
+                      <Field label="Current city">
+                        <select className="h-12 w-full rounded-2xl border border-navy-100 bg-white px-4 text-sm text-navy-700 focus:border-blue-400" value={editTruckForm.current_city} onChange={(e) => setEditTruckForm({ ...editTruckForm, current_city: e.target.value })}>
+                          {fleetCities.map((c) => <option key={c}>{c}</option>)}
+                        </select>
+                      </Field>
+                      <Field label="Destination city">
+                        <Input placeholder="e.g. Mumbai" value={editTruckForm.destination_city} onChange={(e) => setEditTruckForm({ ...editTruckForm, destination_city: e.target.value })} />
+                      </Field>
+                      <Field label="Available from">
+                        <Input type="date" value={editTruckForm.available_from} onChange={(e) => setEditTruckForm({ ...editTruckForm, available_from: e.target.value })} />
+                      </Field>
+                      <Field label="Price per ton (₹)">
+                        <Input required type="number" min={0} value={editTruckForm.price_per_ton} onChange={(e) => setEditTruckForm({ ...editTruckForm, price_per_ton: e.target.value })} />
+                      </Field>
+                      <div className="flex items-end pb-2">
+                        <label className="flex cursor-pointer items-center gap-2 text-sm font-bold text-navy-500">
+                          <Switch checked={editTruckForm.empty_leg} onCheckedChange={(v) => setEditTruckForm({ ...editTruckForm, empty_leg: v })} label="Empty leg" />
+                          Empty leg
+                        </label>
+                      </div>
+                      <div className="flex justify-end gap-2 sm:col-span-2">
+                        <Button type="button" size="sm" variant="outline" onClick={() => setEditingTruckId(null)}>Cancel</Button>
+                        <Button type="submit" size="sm" disabled={mutationLoading}>
+                          {mutationLoading ? 'Saving…' : 'Save changes'}
+                        </Button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <TruckTypeIcon type={t.type} className="h-9 w-14 shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate text-sm font-bold text-navy-600">{t.type} · {Number(t.capacity_tons)}T</p>
+                          {expiry && (
+                            <Badge variant="warning">
+                              {expiry.docType} expiring in {expiry.days} day{expiry.days === 1 ? '' : 's'}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-navy-400">{t.reg_number} · {t.current_city}{t.destination_city ? ` → ${t.destination_city}` : ''}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-navy-600">{formatINR(Number(t.price_per_ton))}<span className="text-xs font-normal text-navy-400">/ton</span></p>
+                        <Badge variant={truckStatusVariant[t.status]} className="mt-1">{t.status}</Badge>
+                      </div>
+                      <div className="flex shrink-0 flex-col gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => startEdit(t)}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-navy-50 text-navy-500 hover:bg-navy-100"
+                          title="Edit truck"
+                          aria-label="Edit truck"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deactivateTruck(t)}
+                          disabled={t.status !== 'available' || mutationLoading}
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-navy-400 hover:bg-amber-50 hover:text-amber-500 disabled:cursor-not-allowed disabled:opacity-40"
+                          title={t.status === 'available' ? 'Deactivate (move to maintenance)' : 'Truck has an active trip — deactivate only when available'}
+                          aria-label="Deactivate truck"
+                        >
+                          <Power className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-navy-600">{t.type} · {Number(t.capacity_tons)}T</p>
-                  <p className="text-xs text-navy-400">{t.reg_number} · {t.current_city}{t.destination_city ? ` → ${t.destination_city}` : ''}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-navy-600">{formatINR(Number(t.price_per_ton))}<span className="text-xs font-normal text-navy-400">/ton</span></p>
-                  <Badge variant={truckStatusVariant[t.status]} className="mt-1">{t.status}</Badge>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -491,7 +766,7 @@ export default function TransporterDashboardPage() {
               </div>
             </div>
           ) : (
-            <RecentBookings bookings={recentBookingItems} />
+            <RecentBookings bookings={recentBookingItems} onUpdateStatus={updateBookingStatus} />
           )}
         </div>
         <div>
@@ -506,7 +781,44 @@ export default function TransporterDashboardPage() {
               </div>
             </div>
           ) : (
-            <AiRecommendations loads={recommendationItems} />
+            <AiRecommendations loads={recommendationItems} onAccept={(id) => setAcceptingLoadId(id)} />
+          )}
+
+          {acceptingLoadId && (
+            <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <p className="text-sm font-bold text-navy-600">Accept load with which truck?</p>
+                <button onClick={() => { setAcceptingLoadId(null); setAcceptTruckId(''); setAcceptError(''); }} className="text-xs font-bold text-navy-400 hover:text-navy-600" aria-label="Cancel accept">
+                  Cancel
+                </button>
+              </div>
+              {availableTrucks.length === 0 ? (
+                <p className="text-xs text-navy-500">No available trucks. Deactivate/maintenance trucks can&apos;t take new loads.</p>
+              ) : (
+                <select
+                  value={acceptTruckId}
+                  onChange={(e) => { setAcceptTruckId(e.target.value); setAcceptError(''); }}
+                  className="h-11 w-full rounded-xl border border-navy-100 bg-white px-3 text-sm font-semibold text-navy-600 focus:border-blue-400"
+                >
+                  <option value="">Select an available truck</option>
+                  {availableTrucks.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.reg_number} · {t.type} · {Number(t.capacity_tons)}T · {t.current_city}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {acceptError && <p className="mt-2 text-xs font-semibold text-red-500">{acceptError}</p>}
+              {availableTrucks.length > 0 && (
+                <Button size="sm" className="mt-3 w-full" disabled={accepting || !acceptTruckId} onClick={() => {
+                  const rec = recommendations.find((r) => r.load_id === acceptingLoadId);
+                  if (rec) acceptLoad(rec);
+                }}>
+                  {accepting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  {accepting ? 'Creating booking…' : 'Confirm & accept load'}
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </div>

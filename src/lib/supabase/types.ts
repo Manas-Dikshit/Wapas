@@ -133,6 +133,21 @@ export type Database = {
         Insert: Partial<Database['public']['Tables']['route_waypoints']['Row']> & { seq: number; city: string };
         Update: Partial<Database['public']['Tables']['route_waypoints']['Row']>;
       };
+      transporter_documents: {
+        Row: {
+          id: string;
+          transporter_id: string;
+          truck_id: string | null;
+          doc_type: 'gst' | 'pan' | 'rc' | 'fitness' | 'driving_license';
+          file_path: string;
+          original_name: string | null;
+          status: 'pending' | 'verified' | 'rejected';
+          expires_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database['public']['Tables']['transporter_documents']['Row']> & { transporter_id: string; doc_type: 'gst' | 'pan' | 'rc' | 'fitness' | 'driving_license'; file_path: string };
+        Update: Partial<Database['public']['Tables']['transporter_documents']['Row']>;
+      };
     };
   };
 };

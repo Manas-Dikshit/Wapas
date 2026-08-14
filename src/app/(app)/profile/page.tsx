@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { BadgeCheck, Camera, FileText, LogOut, Star, Upload } from 'lucide-react';
+import { BadgeCheck, Camera, FileText, Loader2, LogOut, Star, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCurrentProfile } from '@/lib/hooks/use-current-profile';
 import { createClient } from '@/lib/supabase/client';
@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-const documents = [
+const staticDocuments = [
   { name: 'GST Certificate', status: 'Verified' },
   { name: 'PAN Card', status: 'Verified' },
   { name: 'Vehicle RC — MH12 GT 4521', status: 'Verified' },
@@ -19,14 +19,74 @@ const documents = [
   { name: 'Driving License — Suresh Yadav', status: 'Pending' }
 ];
 
+type DocType = 'gst' | 'pan' | 'rc' | 'fitness' | 'driving_license';
+
+const docOptions: { type: DocType; label: string; needsTruck: boolean; hasExpiry: boolean }[] = [
+  { type: 'gst', label: 'GST Certificate', needsTruck: false, hasExpiry: false },
+  { type: 'pan', label: 'PAN Card', needsTruck: false, hasExpiry: false },
+  { type: 'rc', label: 'Vehicle RC', needsTruck: true, hasExpiry: true },
+  { type: 'fitness', label: 'Fitness Certificate', needsTruck: true, hasExpiry: true },
+  { type: 'driving_license', label: 'Driving License', needsTruck: true, hasExpiry: true }
+];
+
+type DocRow = {
+  id: string;
+  truck_id: string | null;
+  doc_type: DocType;
+  file_path: string;
+  original_name: string | null;
+  status: 'pending' | 'verified' | 'rejected';
+  expires_at: string | null;
+  created_at: string;
+};
+
 export default function ProfilePage() {
   const router = useRouter();
   const supabase = createClient();
-  const { profile, loading } = useCurrentProfile();
+  const { profile, loading, isAuthEnabled } = useCurrentProfile();
 
   const [tab, setTab] = useState('profile');
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', company: '', gst: '', city: '' });
+  const [documents, setDocuments] = useState<DocRow[]>([]);
+  const [trucks, setTrucks] = useState<{ id: string; reg_number: string }[]>([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+  const [uploadDoc, setUploadDoc] = useState<DocType>('gst');
+  const [uploadTruckId, setUploadTruckId] = useState('');
+  const [uploadExpiresAt, setUploadExpiresAt] = useState('');
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+
+  const isTransporter = profile?.role === 'transporter';
+
+  // Load real documents + fleet when viewing as a transporter with Supabase on.
+  useEffect(() => {
+    if (!isAuthEnabled || !profile || profile.role !== 'transporter') {
+      setDocuments([]);
+      setDocsLoading(false);
+      return;
+    }
+    const sb = createClient();
+    if (!sb) {
+      setDocuments([]);
+      setDocsLoading(false);
+      return;
+    }
+    let active = true;
+    setDocsLoading(true);
+    Promise.all([
+      sb.from('transporter_documents').select('*').eq('transporter_id', profile.id).then((res) => res.data as DocRow[] | null),
+      sb.from('trucks').select('id, reg_number').eq('transporter_id', profile.id).then((res) => res.data as { id: string; reg_number: string }[] | null)
+    ]).then(([docData, truckData]) => {
+      if (!active) return;
+      setDocuments(docData ?? []);
+      setTrucks(truckData ?? []);
+      setDocsLoading(false);
+    });
+    return () => {
+      active = false;
+    };
+  }, [isAuthEnabled, profile]);
 
   // Keep the edit form in sync once the real (or mock) profile resolves.
   useEffect(() => {
@@ -71,6 +131,60 @@ export default function ProfilePage() {
     toast.success('Signed out');
     router.push('/login');
     router.refresh();
+  }
+
+  async function uploadDocument(e: React.FormEvent) {
+    e.preventDefault();
+    if (!supabase || !profile || profile.role !== 'transporter') return;
+    if (!file) {
+      toast.error('Choose a file to upload');
+      return;
+    }
+    const opt = docOptions.find((d) => d.type === uploadDoc);
+    if (opt?.needsTruck && !uploadTruckId) {
+      toast.error('Select a truck for this document');
+      return;
+    }
+    setUploadBusy(true);
+    const ext = file.name.split('.').pop() || 'bin';
+    const path = `${profile.id}/${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from('transporter-documents').upload(path, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
+    if (upErr) {
+      setUploadBusy(false);
+      toast.error('Upload failed', { description: upErr.message });
+      return;
+    }
+    const { error: insErr } = await supabase.from('transporter_documents').insert({
+      transporter_id: profile.id,
+      truck_id: opt?.needsTruck ? uploadTruckId : null,
+      doc_type: uploadDoc,
+      file_path: path,
+      original_name: file.name,
+      status: 'pending',
+      expires_at: opt?.hasExpiry && uploadExpiresAt ? uploadExpiresAt : null
+    });
+    setUploadBusy(false);
+    if (insErr) {
+      toast.error("Couldn't record document", { description: insErr.message });
+      return;
+    }
+    toast.success('Document uploaded', { description: 'It will be reviewed by our KYC team.' });
+    setFile(null);
+    setUploadExpiresAt('');
+    setUploadTruckId('');
+    setDocsLoading(true);
+    const res = await supabase.from('transporter_documents').select('*').eq('transporter_id', profile.id);
+    setDocuments((res.data as DocRow[] | null) ?? []);
+    setDocsLoading(false);
+  }
+
+  function docStatusVariant(status: DocRow['status'] | string): 'success' | 'warning' | 'navy' {
+    if (status === 'verified') return 'success';
+    if (status === 'rejected') return 'warning';
+    return 'navy';
   }
 
   if (loading) {
@@ -150,20 +264,95 @@ export default function ProfilePage() {
 
       {tab === 'documents' && (
         <div className="card-surface p-5 sm:p-6">
-          <div className="space-y-3">
-            {documents.map((d) => (
-              <div key={d.name} className="flex items-center gap-3 rounded-2xl border border-navy-100 p-3.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-navy-50 text-navy-500">
-                  <FileText className="h-4 w-4" />
+          {isTransporter ? (
+            <>
+              {docsLoading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-2xl" />)}
                 </div>
-                <p className="flex-1 text-sm font-semibold text-navy-600">{d.name}</p>
-                <Badge variant={d.status === 'Verified' ? 'success' : d.status === 'Pending' ? 'navy' : 'warning'}>{d.status}</Badge>
+              ) : documents.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-navy-200 p-5 text-center text-sm text-navy-400">
+                  No documents uploaded yet. Upload your KYC and vehicle documents to keep your fleet active.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {documents.map((d) => {
+                    const opt = docOptions.find((o) => o.type === d.doc_type);
+                    return (
+                      <div key={d.id} className="flex items-center gap-3 rounded-2xl border border-navy-100 p-3.5">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-navy-50 text-navy-500">
+                          <FileText className="h-4 w-4" />
+                        </div>
+                        <p className="flex-1 text-sm font-semibold text-navy-600">{opt?.label ?? d.doc_type}</p>
+                        {d.expires_at && (
+                          <span className="text-[11px] text-navy-400">exp {new Date(d.expires_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                        )}
+                        <Badge variant={docStatusVariant(d.status)}>{d.status}</Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <form onSubmit={uploadDocument} className="mt-5 space-y-3 rounded-2xl border border-navy-100 p-4">
+                <p className="text-xs font-bold text-navy-600">Upload a document</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-[11px] font-bold text-navy-500">Document type</label>
+                    <select value={uploadDoc} onChange={(e) => setUploadDoc(e.target.value as DocType)} className="h-10 w-full rounded-xl border border-navy-100 bg-canvas px-3 text-sm text-navy-600 focus:border-blue-400">
+                      {docOptions.map((o) => (
+                        <option key={o.type} value={o.type}>{o.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {docOptions.find((o) => o.type === uploadDoc)?.needsTruck && (
+                    <div>
+                      <label className="mb-1 block text-[11px] font-bold text-navy-500">Truck</label>
+                      <select value={uploadTruckId} onChange={(e) => setUploadTruckId(e.target.value)} className="h-10 w-full rounded-xl border border-navy-100 bg-canvas px-3 text-sm text-navy-600 focus:border-blue-400">
+                        <option value="">Select truck</option>
+                        {trucks.map((t) => (
+                          <option key={t.id} value={t.id}>{t.reg_number}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  {docOptions.find((o) => o.type === uploadDoc)?.hasExpiry && (
+                    <div>
+                      <label className="mb-1 block text-[11px] font-bold text-navy-500">Expiry date</label>
+                      <input type="date" value={uploadExpiresAt} onChange={(e) => setUploadExpiresAt(e.target.value)} className="h-10 w-full rounded-xl border border-navy-100 bg-canvas px-3 text-sm text-navy-600 focus:border-blue-400" />
+                    </div>
+                  )}
+                  <div>
+                    <label className="mb-1 block text-[11px] font-bold text-navy-500">File</label>
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                      className="h-10 w-full rounded-xl border border-navy-100 bg-canvas px-3 text-sm text-navy-600"
+                    />
+                  </div>
+                </div>
+                <Button type="submit" disabled={uploadBusy || docsLoading}>
+                  {uploadBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                  {uploadBusy ? 'Uploading…' : 'Upload document'}
+                </Button>
+              </form>
+            </>
+          ) : (
+            <>
+              <div className="space-y-3">
+                {staticDocuments.map((d) => (
+                  <div key={d.name} className="flex items-center gap-3 rounded-2xl border border-navy-100 p-3.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-navy-50 text-navy-500">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <p className="flex-1 text-sm font-semibold text-navy-600">{d.name}</p>
+                    <Badge variant={d.status === 'Verified' ? 'success' : d.status === 'Pending' ? 'navy' : 'warning'}>{d.status}</Badge>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <button className="mt-4 flex items-center gap-2 text-sm font-bold text-blue-500">
-            <Upload className="h-4 w-4" /> Upload new document
-          </button>
+            </>
+          )}
         </div>
       )}
 
