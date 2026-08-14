@@ -194,12 +194,14 @@ to the auth user with `role = 'transporter'`; `npm run dev`.
 
 ## Verification
 
-- `npm run typecheck` — **0 errors in this stage's files.**
+- `npm run typecheck` — **0 errors.**
 - `npm run lint` — no warnings/errors.
-- `npm run build` — **blocked by pre-existing type errors** in
-  `src/lib/supabase/middleware.ts` and `src/lib/supabase/server.ts`
-  (implicit-`any` on the cookie `setAll` callback), introduced by prior-stage
-  commit `a9e858c` and present on the clean tree. Per the stage's hard
-  constraints these middleware files are **not modified**. All code added in
-  this stage compiles cleanly (verified: 0 errors across `dashboard/transporter`,
-  `profile`, `widgets`, `filter-bar`, `marketplace`, `supabase/types`).
+- `npm run build` — **clean production build.**
+- CI (`lint` → `typecheck` → `build`) passes on the PR branch.
+
+Note: `typecheck`/`build` initially failed on pre-existing implicit-`any` errors
+in the cookie `setAll` callback in `src/lib/supabase/middleware.ts` and
+`src/lib/supabase/server.ts` (from prior commit `a9e858c`). These were resolved
+with a minimal, non-behavioral type annotation on the `setAll` params
+(`{ name; value; options: CookieOptions }[]`) so the branch can merge — no
+session/route logic changed.
