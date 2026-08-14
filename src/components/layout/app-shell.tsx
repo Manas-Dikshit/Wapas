@@ -19,6 +19,7 @@ import {
   Map
 } from 'lucide-react';
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/primitives';
 import { notifications } from '@/lib/mock-data';
@@ -67,12 +68,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors',
-                  active ? 'bg-blue-50 text-blue-600' : 'text-navy-400 hover:bg-navy-50 hover:text-navy-600'
+                  'relative flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-colors',
+                  active ? 'text-blue-600' : 'text-navy-400 hover:bg-navy-50 hover:text-navy-600'
                 )}
               >
-                <item.icon className="h-[18px] w-[18px]" strokeWidth={2.3} />
-                {item.label}
+                {active && (
+                  <motion.span
+                    layoutId="nav-active-pill"
+                    className="absolute inset-0 rounded-2xl bg-blue-50"
+                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                  />
+                )}
+                <item.icon className="relative h-[18px] w-[18px]" strokeWidth={2.3} />
+                <span className="relative">{item.label}</span>
               </Link>
             );
           })}
@@ -135,9 +143,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 z-40 bg-navy-700/40 backdrop-blur-sm lg:hidden" onClick={() => setMobileMenuOpen(false)}>
-            <div className="absolute right-0 top-0 h-full w-72 animate-fade-up bg-white p-5 shadow-floating" onClick={(e) => e.stopPropagation()}>
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-40 bg-navy-700/40 backdrop-blur-sm lg:hidden"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <motion.div
+                  initial={{ x: '100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '100%' }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 32 }}
+                  className="absolute right-0 top-0 h-full w-72 bg-white p-5 shadow-floating"
+                  onClick={(e) => e.stopPropagation()}
+                >
               <div className="mb-6 flex items-center gap-3">
                 <Avatar name={displayName} />
                 <div>
@@ -158,9 +182,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </Link>
                 ))}
               </nav>
-            </div>
-          </div>
-        )}
+              </motion.div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-12 lg:pt-8">{children}</main>
       </div>

@@ -66,8 +66,8 @@ const config: Config = {
         xl4: '2.25rem'
       },
       boxShadow: {
-        soft: '0 2px 8px -2px rgba(38,45,83,0.08), 0 8px 24px -8px rgba(38,45,83,0.10)',
-        floating: '0 12px 32px -12px rgba(38,45,83,0.22), 0 4px 12px -4px rgba(38,45,83,0.10)',
+        soft: '0 1px 2px -1px rgba(38,45,83,0.04), 0 4px 16px -8px rgba(38,45,83,0.06)',
+        floating: '0 4px 10px -6px rgba(38,45,83,0.10), 0 16px 40px -16px rgba(38,45,83,0.14)',
         glow: '0 0 0 1px rgba(105,200,212,0.25), 0 8px 30px -8px rgba(74,127,206,0.45)'
       },
       backgroundImage: {

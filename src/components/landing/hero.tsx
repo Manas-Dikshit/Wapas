@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, MapPin, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
+import { Stagger, StaggerItem } from '@/components/ui/motion';
 
 export function Hero() {
   return (
@@ -47,9 +49,11 @@ export function Hero() {
             </Link>
           </div>
           <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-navy-400">
-            <Stat value="6,900+" label="trucks on the network" />
-            <Stat value="₹4.7Cr" label="in monthly matched freight" />
-            <Stat value="31%" label="avg. empty-leg reduction" />
+            <Stagger delay={0.4} className="flex flex-wrap items-center gap-x-8 gap-y-3">
+              <StaggerItem><Stat value={6900} suffix="+" label="trucks on the network" /></StaggerItem>
+              <StaggerItem><Stat value={4.7} prefix="₹" suffix="Cr" label="in monthly matched freight" /></StaggerItem>
+              <StaggerItem><Stat value={31} suffix="%" label="avg. empty-leg reduction" /></StaggerItem>
+            </Stagger>
           </div>
         </motion.div>
 
@@ -66,13 +70,56 @@ export function Hero() {
   );
 }
 
-function Stat({ value, label }: { value: string; label: string }) {
+function Stat({ value, label, prefix = '', suffix = '' }: { value: number; label: string; prefix?: string; suffix?: string }) {
   return (
     <div>
-      <p className="font-display text-xl font-extrabold text-navy-600">{value}</p>
+      <p className="font-display text-xl font-extrabold text-navy-600">
+        {prefix}
+        <CountUp value={value} />
+        {suffix}
+      </p>
       <p className="text-xs text-navy-400">{label}</p>
     </div>
   );
+}
+
+function CountUp({ value }: { value: number }) {
+  const reduce = useReducedMotion();
+  const ref = useRef<HTMLSpanElement>(null);
+  const [display, setDisplay] = useState('0');
+
+  useEffect(() => {
+    if (reduce || !ref.current) {
+      setDisplay(value.toLocaleString('en-IN'));
+      return;
+    }
+    const el = ref.current;
+    let raf = 0;
+    const start = performance.now();
+    const duration = 900;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplay(Math.round(eased * value).toLocaleString('en-IN'));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          raf = requestAnimationFrame(tick);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(el);
+    return () => {
+      cancelAnimationFrame(raf);
+      io.disconnect();
+    };
+  }, [value, reduce]);
+
+  return <span ref={ref}>{display}</span>;
 }
 
 function RouteMatchCard() {

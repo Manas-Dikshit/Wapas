@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
@@ -16,8 +16,22 @@ const links = [
 
 export function SiteNavbar() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-navy-100/60 bg-canvas/80 backdrop-blur-xl">
+    <header
+      className={cn(
+        'sticky top-0 z-40 transition-all duration-300',
+        scrolled ? 'border-b border-navy-100/60 bg-canvas/85 shadow-soft' : 'border-b border-transparent bg-canvas/60'
+      )}
+    >
       <div className="container-app flex h-[72px] items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.png" alt="Wapas logo" width={38} height={38} className="rounded-lg" priority />

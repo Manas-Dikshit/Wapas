@@ -12,7 +12,7 @@ export function Timeline({ steps }: { steps: TimelineStep[] }) {
   return (
     <div className="space-y-0">
       {steps.map((s, i) => (
-        <div key={s.label} className="relative flex gap-4 pb-6 last:pb-0">
+        <div key={s.label} className="relative flex gap-4 pb-6 last:pb-0 animate-scale-in" style={{ animationDelay: `${i * 90}ms` }}>
           {i < steps.length - 1 && (
             <span className={cn('absolute left-[11px] top-6 h-full w-0.5', s.done ? 'bg-blue-400' : 'bg-navy-100')} />
           )}

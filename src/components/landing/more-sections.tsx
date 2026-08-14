@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Star, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
+import { Reveal, Stagger, StaggerItem } from '@/components/ui/motion';
 import { SectionEyebrow } from './sections';
 
 const testimonials = [
@@ -32,17 +33,12 @@ export function Testimonials() {
     <section className="border-y border-navy-100/60 bg-white py-20">
       <div className="container-app">
         <SectionEyebrow label="Trusted on the road" />
-        <h2 className="max-w-2xl font-display text-3xl font-extrabold text-navy-600 sm:text-4xl">What our network says</h2>
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">
-          {testimonials.map((t, i) => (
-            <motion.div
-              key={t.name}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
-              className="rounded-xl3 border border-navy-100 p-6"
-            >
+        <Reveal>
+          <h2 className="max-w-2xl font-display text-3xl font-extrabold text-navy-600 sm:text-4xl">What our network says</h2>
+        </Reveal>
+        <Stagger className="mt-12 grid gap-6 lg:grid-cols-3">
+          {testimonials.map((t) => (
+            <StaggerItem key={t.name} className="rounded-xl3 border border-navy-100 p-6">
               <div className="flex gap-0.5 text-amber-400">
                 {Array.from({ length: 5 }).map((_, idx) => (
                   <Star key={idx} className="h-4 w-4" fill={idx < Math.round(t.rating) ? 'currentColor' : 'none'} />
@@ -53,9 +49,9 @@ export function Testimonials() {
                 <p className="text-sm font-bold text-navy-600">{t.name}</p>
                 <p className="text-xs text-navy-400">{t.role}</p>
               </div>
-            </motion.div>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </div>
     </section>
   );
@@ -66,20 +62,15 @@ export function Pricing() {
     <section id="pricing" className="py-20">
       <div className="container-app">
         <SectionEyebrow label="Pricing" />
-        <h2 className="max-w-2xl font-display text-3xl font-extrabold text-navy-600 sm:text-4xl">Simple pricing that scales with your fleet</h2>
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">
-          {plans.map((p, i) => (
-            <motion.div
-              key={p.name}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
-              className={cn(
-                'relative rounded-xl3 border p-7',
-                p.highlighted ? 'border-transparent bg-navy-600 text-white shadow-floating' : 'border-navy-100 bg-white'
-              )}
-            >
+        <Reveal>
+          <h2 className="max-w-2xl font-display text-3xl font-extrabold text-navy-600 sm:text-4xl">Simple pricing that scales with your fleet</h2>
+        </Reveal>
+        <Stagger className="mt-12 grid gap-6 lg:grid-cols-3">
+          {plans.map((p) => (
+            <StaggerItem key={p.name} className={cn(
+              'relative rounded-xl3 border p-7',
+              p.highlighted ? 'border-transparent bg-navy-600 text-white shadow-floating' : 'border-navy-100 bg-white'
+            )}>
               {p.highlighted && (
                 <span className="absolute -top-3 left-7 rounded-full bg-aqua-400 px-3 py-1 text-[11px] font-bold text-navy-700">Most popular</span>
               )}
@@ -104,9 +95,9 @@ export function Pricing() {
               >
                 Choose {p.name}
               </Link>
-            </motion.div>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </div>
     </section>
   );
