@@ -29,7 +29,10 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends Omit<
+      React.ButtonHTMLAttributes<HTMLButtonElement>,
+      'onDrag' | 'onDragStart' | 'onDragEnd' | 'onDragEnter' | 'onDragLeave' | 'onDragOver' | 'onDrop' | 'onAnimationStart'
+    >,
     VariantProps<typeof buttonVariants> {}
 
 const PRESSABLE_VARIANTS: readonly string[] = ['primary', 'dark'];
