@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Star, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button-variants';
 import { Reveal, Stagger, StaggerItem } from '@/components/ui/motion';
 import { SectionEyebrow } from './sections';
 import { cta, faqs, plans, testimonials } from '@/lib/landing-content';

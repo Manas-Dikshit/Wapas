@@ -5,7 +5,7 @@ import { loads, trucks } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/primitives';
 import { cn, formatINR } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button-variants';
 import { TruckTypeIcon } from '@/components/marketplace/truck-type-icon';
 import { SaveTransporterButton } from '@/components/marketplace/save-transporter-button';
 import { RouteStrip } from '@/components/marketplace/route-strip';

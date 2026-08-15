@@ -6,7 +6,7 @@ import { ArrowRight, ChevronDown, MapPin, Route as RouteIcon, Truck, Zap } from 
 import type { Route } from '@/lib/types';
 import { routes, trucks } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button-variants';
 import { cn } from '@/lib/utils';
 
 function trucksThrough(city: string) {

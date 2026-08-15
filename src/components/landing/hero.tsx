@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, MapPin, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button-variants';
 import { Stagger, StaggerItem } from '@/components/ui/motion';
 import { hero } from '@/lib/landing-content';
 

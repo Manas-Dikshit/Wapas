@@ -24,7 +24,7 @@ import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/primitives';
 import { notifications } from '@/lib/mock-data';
 import { useCurrentProfile } from '@/lib/hooks/use-current-profile';
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button-variants';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
