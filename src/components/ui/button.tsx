@@ -1,9 +1,12 @@
+'use client';
+
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas overflow-hidden',
+  'relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas overflow-hidden',
   {
     variants: {
       variant: {
@@ -29,10 +32,23 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {}
 
+const PRESSABLE_VARIANTS: readonly string[] = ['primary', 'dark'];
+
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, ...props }, ref) => (
-    <button ref={ref} className={cn(buttonVariants({ variant, size, className }))} {...props} />
-  )
+  ({ className, variant, size, ...props }, ref) => {
+    const reduce = useReducedMotion();
+    const pressable = variant === undefined || PRESSABLE_VARIANTS.includes(variant as string);
+    return (
+      <motion.button
+        ref={ref}
+        className={cn(buttonVariants({ variant, size, className }))}
+        whileHover={!reduce && pressable ? { scale: 1.02 } : undefined}
+        whileTap={!reduce && pressable ? { scale: 0.98 } : undefined}
+        transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
+        {...props}
+      />
+    );
+  }
 );
 Button.displayName = 'Button';
 
