@@ -64,9 +64,10 @@ export default function BookingsPage() {
               <p className="text-xs text-navy-400">{b.eta}</p>
             </div>
             <ChevronRight className="h-4 w-4 shrink-0 text-navy-300" />
-          </Link>
+            </Link>
+          </StaggerItem>
         ))}
-      </div>
+      </Stagger>
     </div>
   );
 }
