@@ -66,8 +66,16 @@ export default function BookingPage({ params }: { params: { id: string } }) {
         ))}
       </div>
 
-      {step === 0 && (
-        <div className="card-surface p-6">
+      <AnimatePresence mode="wait" initial={false}>
+        {step === 0 && (
+          <motion.div
+            key="review"
+            initial={reduce ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduce ? undefined : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="card-surface p-6">
           <h2 className="font-display text-lg font-bold text-navy-600">Review booking</h2>
           {!load && truck && (
             <div className="mt-3 flex items-center gap-2">
