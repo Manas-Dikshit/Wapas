@@ -29,11 +29,11 @@ export function RoutePreview({ route, className }: { route: Route; className?: s
         className="flex w-full items-center gap-3 px-4 py-3 text-left"
       >
         <div className="relative flex flex-1 items-center">
-          <span className="z-10 shrink-0 rounded-full bg-wapas-gradient px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">
+          <span className="z-10 shrink-0 rounded-full bg-blue-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">
             {stops[0].city}
           </span>
           <div className="relative mx-1 flex flex-1 items-center">
-            <span className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-route-line" />
+            <span className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-aqua-400/60" />
             {midStops.length > 0 && (
               <span className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-around">
                 {midStops.slice(0, 3).map((s) => (
@@ -67,7 +67,7 @@ export function RoutePreview({ route, className }: { route: Route; className?: s
                     className={cn(
                       'relative z-10 mt-1.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2',
                       isTerminal
-                        ? 'border-white bg-wapas-gradient shadow-glow'
+                        ? 'border-white bg-blue-500'
                         : isJunction
                           ? 'border-blue-400 bg-white'
                           : 'border-aqua-400 bg-aqua-50'

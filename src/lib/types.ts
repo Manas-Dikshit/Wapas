@@ -111,3 +111,73 @@ export interface RouteStat {
   trips: number;
   savingsPct: number;
 }
+
+// --- Landing / marketing content -----------------------------------------
+
+export interface NavLink {
+  href: string;
+  label: string;
+}
+
+export interface HeroStat {
+  value: number;
+  label: string;
+  prefix?: string;
+  suffix?: string;
+}
+
+export interface LandingHero {
+  badge: string;
+  titleA: string;
+  titleHighlight: string;
+  titleB: string;
+  description: string;
+  primaryCta: NavLink;
+  secondaryCta: NavLink;
+  stats: HeroStat[];
+}
+
+export interface ProblemCard {
+  stat: string;
+  label: string;
+  desc: string;
+}
+
+export interface FeatureCard {
+  icon: string;
+  title: string;
+  desc: string;
+}
+
+export interface Testimonial {
+  name: string;
+  role: string;
+  quote: string;
+  rating: number;
+}
+
+export interface PricingPlan {
+  name: string;
+  price: string;
+  desc: string;
+  features: string[];
+  highlighted: boolean;
+  cta: string;
+}
+
+export interface FaqItem {
+  q: string;
+  a: string;
+}
+
+export interface CtaContent {
+  heading: string;
+  description: string;
+  primaryCta: NavLink;
+  secondaryCta: NavLink;
+}
+
+export interface FooterColumn {
+  title: string;
+  links: NavLink[];
+}

@@ -1,55 +1,51 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, MapPin, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
+import { Stagger, StaggerItem } from '@/components/ui/motion';
+import { hero } from '@/lib/landing-content';
 
 export function Hero() {
   return (
     <section className="relative overflow-hidden pb-20 pt-14 sm:pb-28 sm:pt-20">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-40 right-[-10%] h-[520px] w-[520px] rounded-full opacity-40 blur-3xl"
-        style={{ background: 'radial-gradient(circle, #69C8D4 0%, transparent 70%)' }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-52 left-[-15%] h-[520px] w-[520px] rounded-full opacity-30 blur-3xl"
-        style={{ background: 'radial-gradient(circle, #4A7FCE 0%, transparent 70%)' }}
-      />
 
       <div className="container-app relative grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
         <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }}>
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-navy-100 bg-white px-4 py-1.5 text-xs font-bold text-navy-500 shadow-soft">
             <span className="h-1.5 w-1.5 rounded-full bg-aqua-400" />
-            Started from my own freight, now in india
+            {hero.badge}
           </div>
           <h1 className="font-display text-[2.5rem] font-extrabold leading-[1.08] text-navy-600 sm:text-6xl">
-            Every empty mile
+            {hero.titleA}
             <br />
-            is a <span className="bg-wapas-gradient bg-clip-text text-transparent">wasted trip.</span>
+            is a <span className="text-blue-500">{hero.titleHighlight}</span>
             <br />
-            Wapas fixes that.
+            {hero.titleB}
           </h1>
           <p className="mt-6 max-w-lg text-base text-navy-400 sm:text-lg">
-            Wapas matches your truck&apos;s return leg with a ready-to-ship load in real time —
-            so transporters earn on the way back, and shippers get capacity in minutes, not days.
+            {hero.description}
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <Link href="/register" className={cn(buttonVariants({ size: 'lg' }), 'group')}>
-              Sign up
+            <Link href={hero.primaryCta.href} className={cn(buttonVariants({ size: 'lg' }), 'group')}>
+              {hero.primaryCta.label}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
-            <Link href="/login" className={cn(buttonVariants({ variant: 'outline', size: 'lg' }))}>
-              View live demo
+            <Link href={hero.secondaryCta.href} className={cn(buttonVariants({ variant: 'outline', size: 'lg' }))}>
+              {hero.secondaryCta.label}
             </Link>
           </div>
           <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-navy-400">
-            <Stat value="6,900+" label="trucks on the network" />
-            <Stat value="₹4.7Cr" label="in monthly matched freight" />
-            <Stat value="31%" label="avg. empty-leg reduction" />
+            <Stagger delay={0.4} className="flex flex-wrap items-center gap-x-8 gap-y-3">
+              {hero.stats.map((s) => (
+                <StaggerItem key={s.label}>
+                  <Stat value={s.value} prefix={s.prefix} suffix={s.suffix} label={s.label} />
+                </StaggerItem>
+              ))}
+            </Stagger>
           </div>
         </motion.div>
 
@@ -66,13 +62,56 @@ export function Hero() {
   );
 }
 
-function Stat({ value, label }: { value: string; label: string }) {
+function Stat({ value, label, prefix = '', suffix = '' }: { value: number; label: string; prefix?: string; suffix?: string }) {
   return (
     <div>
-      <p className="font-display text-xl font-extrabold text-navy-600">{value}</p>
+      <p className="font-display text-xl font-extrabold text-navy-600">
+        {prefix}
+        <CountUp value={value} />
+        {suffix}
+      </p>
       <p className="text-xs text-navy-400">{label}</p>
     </div>
   );
+}
+
+function CountUp({ value }: { value: number }) {
+  const reduce = useReducedMotion();
+  const ref = useRef<HTMLSpanElement>(null);
+  const [display, setDisplay] = useState('0');
+
+  useEffect(() => {
+    if (reduce || !ref.current) {
+      setDisplay(value.toLocaleString('en-IN'));
+      return;
+    }
+    const el = ref.current;
+    let raf = 0;
+    const start = performance.now();
+    const duration = 900;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplay(Math.round(eased * value).toLocaleString('en-IN'));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          raf = requestAnimationFrame(tick);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(el);
+    return () => {
+      cancelAnimationFrame(raf);
+      io.disconnect();
+    };
+  }, [value, reduce]);
+
+  return <span ref={ref}>{display}</span>;
 }
 
 function RouteMatchCard() {
@@ -113,7 +152,7 @@ function RouteMatchCard() {
       </div>
 
       <div className="mt-6 flex items-center gap-3 rounded-2xl bg-navy-50 p-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-wapas-gradient text-white">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500 text-white">
           <Truck className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">

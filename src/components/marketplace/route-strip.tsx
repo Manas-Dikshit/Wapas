@@ -27,7 +27,7 @@ export function RouteStrip({
           const isLast = i === route.stops.length - 1;
           return (
             <div key={`${stop.city}-${i}`} className="flex items-center gap-1.5">
-              <StopChip stop={stop} highlighted={highlightCity ? stop.city === highlightCity : false} />
+              <StopChip stop={stop} highlighted={highlightCity ? stop.city === highlightCity : false} index={i} />
               {!isLast && <span className="h-px w-4 bg-navy-200" />}
             </div>
           );
@@ -38,12 +38,13 @@ export function RouteStrip({
   );
 }
 
-function StopChip({ stop, highlighted }: { stop: RouteStop; highlighted: boolean }) {
+function StopChip({ stop, highlighted, index }: { stop: RouteStop; highlighted: boolean; index?: number }) {
   const isTerminal = stop.isHighwayJunction && highlighted;
   return (
     <span
+      style={index ? { animationDelay: `${index * 45}ms` } : undefined}
       className={cn(
-        'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors',
+        'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors animate-scale-in',
         highlighted ? 'border-blue-300 bg-blue-50 text-blue-600' : 'border-navy-100 bg-white text-navy-500'
       )}
     >

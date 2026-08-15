@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { PackageSearch } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { Tabs } from '@/components/ui/primitives';
+import { Stagger, StaggerItem } from '@/components/ui/motion';
 import { FilterBar } from '@/components/marketplace/filter-bar';
 import { LoadCard, TruckCard } from '@/components/marketplace/cards';
 import { IntermediateStops } from '@/components/marketplace/intermediate-stops';
@@ -212,11 +213,19 @@ export default function MarketplacePage() {
           )}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Stagger key={`${mode}-${JSON.stringify({ city, type })}`} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {mode === 'loads'
-            ? filteredLoads.map((l) => <LoadCard key={l.id} load={l} />)
-            : filteredTrucks.map((t) => <TruckCard key={t.id} truck={t} />)}
-        </div>
+            ? filteredLoads.map((l) => (
+                <StaggerItem key={l.id}>
+                  <LoadCard load={l} />
+                </StaggerItem>
+              ))
+            : filteredTrucks.map((t) => (
+                <StaggerItem key={t.id}>
+                  <TruckCard truck={t} />
+                </StaggerItem>
+              ))}
+        </Stagger>
       )}
 
       <IntermediateStops />
