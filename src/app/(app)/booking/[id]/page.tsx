@@ -200,8 +200,10 @@ export default function BookingPage({ params }: { params: { id: string } }) {
               Track shipment
             </Button>
           </div>
-        </div>
-      )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
