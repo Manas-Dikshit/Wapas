@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { ArrowDownLeft, ArrowUpRight, CreditCard, Plus, Smartphone, Wallet as WalletIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import { transactions } from '@/lib/mock-data';
+import { bookings, transactions } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatINR } from '@/lib/utils';
@@ -12,6 +12,10 @@ const statusVariant = { success: 'success', pending: 'warning', failed: 'danger'
 
 export default function WalletPage() {
   const [balance] = useState(84250);
+  const escrowTotal = bookings.reduce(
+    (sum, booking) => sum + Math.max((booking.escrow?.totalAmount ?? 0) - (booking.escrow?.releasedAmount ?? 0), 0),
+    0
+  );
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 pb-6 animate-fade-up">
@@ -46,7 +50,25 @@ export default function WalletPage() {
       <div className="grid grid-cols-3 gap-3">
         <SummaryTile icon={<ArrowUpRight className="h-4 w-4" />} label="Earned (MTD)" value={formatINR(29006)} tone="up" />
         <SummaryTile icon={<ArrowDownLeft className="h-4 w-4" />} label="Spent (MTD)" value={formatINR(3845)} tone="down" />
-        <SummaryTile icon={<WalletIcon className="h-4 w-4" />} label="In escrow" value={formatINR(29400)} tone="neutral" />
+        <SummaryTile icon={<WalletIcon className="h-4 w-4" />} label="In escrow" value={formatINR(escrowTotal)} tone="neutral" />
+      </div>
+
+      <div className="card-surface p-5 sm:p-6">
+        <h3 className="mb-4 font-display text-base font-bold text-navy-600">Escrow payout status</h3>
+        <div className="space-y-3">
+          {bookings.filter((booking) => booking.escrow).map((booking) => (
+            <div key={booking.id} className="flex items-center justify-between rounded-2xl border border-navy-100 p-3.5">
+              <div>
+                <p className="text-sm font-bold text-navy-600">{booking.loadTitle}</p>
+                <p className="text-xs text-navy-400">{booking.route}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold text-navy-600">{formatINR((booking.escrow?.totalAmount ?? 0) - (booking.escrow?.releasedAmount ?? 0))}</p>
+                <p className="text-[11px] font-semibold text-blue-500">{booking.escrow?.status === 'released' ? 'Released' : 'Held in escrow'}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="card-surface p-5 sm:p-6">

@@ -45,6 +45,9 @@ export default function BookingsPage() {
               <div className="flex items-center gap-2">
                 <p className="truncate text-sm font-bold text-navy-600">{b.loadTitle}</p>
                 <Badge variant={statusVariant[b.status]}>{b.status.replace('-', ' ')}</Badge>
+                {b.escrow && (
+                  <Badge variant="aqua">Escrow {formatINR((b.escrow.totalAmount - b.escrow.releasedAmount))}</Badge>
+                )}
               </div>
               <p className="mt-1 text-xs text-navy-400">{b.route} · {b.vehicleNumber} · {b.driverName}</p>
               {b.status === 'in-transit' && (

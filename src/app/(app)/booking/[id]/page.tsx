@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, notFound } from 'next/navigation';
 import { Check, CreditCard, Loader2, Shield, Smartphone, Wallet as WalletIcon } from 'lucide-react';
-import { loads, trucks } from '@/lib/mock-data';
+import { bookings, loads, trucks } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { cn, formatINR } from '@/lib/utils';
 import { TruckTypeIcon } from '@/components/marketplace/truck-type-icon';
@@ -25,6 +25,17 @@ export default function BookingPage({ params }: { params: { id: string } }) {
   const route = load ? `${load.originCity} → ${load.destinationCity}` : `${truck!.currentCity} → ${truck!.destinationCity}`;
   const amount = load ? load.budget : truck!.pricePerTon * truck!.capacityTons;
   const counterparty = load ? load.shipperName : truck!.transporterName;
+  const escrow = bookings.find((booking) => booking.loadId === item.id || booking.truckId === item.id)?.escrow ?? {
+    id: `esc_${item.id}`,
+    bookingId: `bk_${item.id}`,
+    totalAmount: amount,
+    releasedAmount: Math.round(amount * 0.4),
+    status: 'partially_released',
+    milestones: [
+      { id: `milestone-${item.id}-pickup`, label: 'Pickup confirmed', amount: Math.round(amount * 0.4), status: 'released', dueAt: 'Today' },
+      { id: `milestone-${item.id}-delivery`, label: 'Delivery payout', amount: amount - Math.round(amount * 0.4), status: 'pending', dueAt: 'Delivery' }
+    ]
+  };
 
   function confirmPayment() {
     setProcessing(true);
@@ -71,6 +82,25 @@ export default function BookingPage({ params }: { params: { id: string } }) {
           <div className="mt-5 flex items-center justify-between border-t border-navy-100 pt-5">
             <span className="text-sm font-semibold text-navy-500">Total amount</span>
             <span className="font-display text-2xl font-extrabold text-navy-600">{formatINR(amount)}</span>
+          </div>
+          <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-emerald-600">Escrow status</p>
+                <p className="mt-1 text-sm font-bold text-navy-600">{formatINR(escrow.totalAmount - escrow.releasedAmount)} held securely</p>
+              </div>
+              <Shield className="h-4 w-4 text-emerald-600" />
+            </div>
+            <div className="mt-3 space-y-2">
+              {escrow.milestones.map((milestone) => (
+                <div key={milestone.id} className="flex items-center justify-between rounded-xl bg-white/60 px-2.5 py-2 text-[11px]">
+                  <span className="text-navy-500">{milestone.label}</span>
+                  <span className={cn('font-bold', milestone.status === 'released' ? 'text-emerald-600' : 'text-navy-500')}>
+                    {milestone.status === 'released' ? 'Released' : 'Pending'} · {formatINR(milestone.amount)}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
           <p className="mt-3 flex items-center gap-1.5 text-xs text-navy-400">
             <Shield className="h-3.5 w-3.5 text-emerald-500" /> Held securely in escrow until delivery is confirmed.
@@ -133,6 +163,7 @@ export default function BookingPage({ params }: { params: { id: string } }) {
           <div className="mt-6 w-full space-y-2 rounded-2xl bg-navy-50 p-4 text-left">
             <Row label="Booking ID" value={`#BK${item.id.slice(-4).toUpperCase()}`} />
             <Row label="Amount paid" value={formatINR(amount)} />
+            <Row label="Escrow held" value={formatINR(escrow.totalAmount - escrow.releasedAmount)} />
             <Row label="Route" value={route} />
           </div>
           <div className="mt-6 flex w-full gap-3">
