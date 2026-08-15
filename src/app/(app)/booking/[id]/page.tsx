@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, notFound } from 'next/navigation';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Check, CreditCard, Loader2, Shield, Smartphone, Wallet as WalletIcon } from 'lucide-react';
 import { bookings, loads, trucks } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ export default function BookingPage({ params }: { params: { id: string } }) {
   if (!item) notFound();
 
   const [step, setStep] = useState(0);
+  const reduce = useReducedMotion();
   const [method, setMethod] = useState<'upi' | 'card' | 'wallet'>('upi');
   const [processing, setProcessing] = useState(false);
 
