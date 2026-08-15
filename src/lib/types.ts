@@ -31,6 +31,23 @@ export interface Route {
   stops: RouteStop[];
 }
 
+export interface EscrowMilestone {
+  id: string;
+  label: string;
+  amount: number;
+  status: 'pending' | 'released' | 'disputed';
+  dueAt?: string;
+}
+
+export interface EscrowState {
+  id: string;
+  bookingId: string;
+  totalAmount: number;
+  releasedAmount: number;
+  status: 'held' | 'partially_released' | 'released';
+  milestones: EscrowMilestone[];
+}
+
 export interface Truck {
   id: string;
   regNumber: string;
@@ -85,6 +102,26 @@ export interface Booking {
   driverName: string;
   driverPhone: string;
   vehicleNumber: string;
+  escrow?: EscrowState;
+  tracking?: ShipmentTracker;
+}
+
+export interface TrackingEvent {
+  id: string;
+  bookingId: string;
+  timestamp: string;
+  status: 'picked_up' | 'in_transit' | 'checkpoint' | 'out_for_delivery' | 'delivered';
+  location: string;
+  note?: string;
+}
+
+export interface ShipmentTracker {
+  bookingId: string;
+  currentLocation: string;
+  progressPct: number;
+  eta: string;
+  updatedAt: string;
+  events: TrackingEvent[];
 }
 
 export interface Transaction {

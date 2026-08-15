@@ -1,4 +1,4 @@
-import type { Booking, Load, NotificationItem, Profile, Route, RouteStat, Transaction, Truck } from './types';
+import type { Booking, EscrowState, Load, NotificationItem, Profile, Route, RouteStat, ShipmentTracker, TrackingEvent, Transaction, Truck } from './types';
 
 function normalizeCityName(city: string): string {
   return city.trim().replace(/\s+/g, ' ').toLowerCase();
@@ -68,11 +68,114 @@ export const loads: Load[] = [
   { id: 'ld_208', title: 'Local Grocery Restock', category: 'FMCG', weightTons: 2.5, originCity: 'Pune', destinationCity: 'Nashik', pickupDate: '2026-08-05', shipperId: 'usr_017', shipperName: 'FreshMart Retail', budget: 6200, truckTypeNeeded: 'Mini Truck', status: 'open', distanceKm: 210 }
 ];
 
+export const escrowState: Record<string, EscrowState> = {
+  bk_301: {
+    id: 'esc_301',
+    bookingId: 'bk_301',
+    totalAmount: 21500,
+    releasedAmount: 10750,
+    status: 'partially_released',
+    milestones: [
+      { id: 'm_301_1', label: 'Pickup confirmed', amount: 10750, status: 'released', dueAt: 'Today, 6:40 PM' },
+      { id: 'm_301_2', label: 'Delivery payout', amount: 10750, status: 'pending', dueAt: 'Tomorrow, 9:00 AM' }
+    ]
+  },
+  bk_302: {
+    id: 'esc_302',
+    bookingId: 'bk_302',
+    totalAmount: 29400,
+    releasedAmount: 0,
+    status: 'held',
+    milestones: [
+      { id: 'm_302_1', label: 'Vehicle dispatched', amount: 11760, status: 'pending', dueAt: 'Tomorrow, 2:00 PM' },
+      { id: 'm_302_2', label: 'Delivery payout', amount: 17640, status: 'pending', dueAt: 'Aug 8, 2026' }
+    ]
+  },
+  bk_303: {
+    id: 'esc_303',
+    bookingId: 'bk_303',
+    totalAmount: 19900,
+    releasedAmount: 19900,
+    status: 'released',
+    milestones: [
+      { id: 'm_303_1', label: 'Pickup confirmed', amount: 7450, status: 'released', dueAt: 'Aug 2, 2026' },
+      { id: 'm_303_2', label: 'Delivery payout', amount: 12450, status: 'released', dueAt: 'Aug 2, 2026' }
+    ]
+  },
+  bk_304: {
+    id: 'esc_304',
+    bookingId: 'bk_304',
+    totalAmount: 9800,
+    releasedAmount: 9800,
+    status: 'released',
+    milestones: [
+      { id: 'm_304_1', label: 'Pickup confirmed', amount: 4900, status: 'released', dueAt: 'Jul 29, 2026' },
+      { id: 'm_304_2', label: 'Delivery payout', amount: 4900, status: 'released', dueAt: 'Jul 29, 2026' }
+    ]
+  }
+};
+
+export const trackingEvents: Record<string, TrackingEvent[]> = {
+  bk_301: [
+    { id: 'evt_301_1', bookingId: 'bk_301', timestamp: 'Aug 3, 9:14 AM', status: 'picked_up', location: 'Mumbai', note: 'Load secured at origin warehouse' },
+    { id: 'evt_301_2', bookingId: 'bk_301', timestamp: 'Aug 3, 11:40 AM', status: 'in_transit', location: 'Nashik', note: 'Truck departed for Pune corridor' },
+    { id: 'evt_301_3', bookingId: 'bk_301', timestamp: 'Aug 3, 12:05 PM', status: 'checkpoint', location: 'Bhiwandi', note: 'Checkpoint passed, traffic normal' },
+    { id: 'evt_301_4', bookingId: 'bk_301', timestamp: 'Today, 5:30 PM', status: 'out_for_delivery', location: 'Pune outskirts', note: 'Final-mile delivery in progress' }
+  ],
+  bk_302: [
+    { id: 'evt_302_1', bookingId: 'bk_302', timestamp: 'Aug 4, 2:30 PM', status: 'picked_up', location: 'Jaipur', note: 'Cargo accepted and sealed' },
+    { id: 'evt_302_2', bookingId: 'bk_302', timestamp: 'Tomorrow, 7:00 AM', status: 'in_transit', location: 'Manesar', note: 'Route is on schedule' }
+  ],
+  bk_303: [
+    { id: 'evt_303_1', bookingId: 'bk_303', timestamp: 'Aug 2, 8:00 AM', status: 'picked_up', location: 'Chennai', note: 'Consignment loaded' },
+    { id: 'evt_303_2', bookingId: 'bk_303', timestamp: 'Aug 2, 2:15 PM', status: 'delivered', location: 'Coimbatore', note: 'Delivery completed and proof signed' }
+  ],
+  bk_304: [
+    { id: 'evt_304_1', bookingId: 'bk_304', timestamp: 'Jul 29, 10:00 AM', status: 'picked_up', location: 'Surat', note: 'Picked up from warehouse' },
+    { id: 'evt_304_2', bookingId: 'bk_304', timestamp: 'Jul 29, 2:30 PM', status: 'delivered', location: 'Ahmedabad', note: 'Delivered to final stop' }
+  ]
+};
+
+export const shipmentTrackers: Record<string, ShipmentTracker> = {
+  bk_301: {
+    bookingId: 'bk_301',
+    currentLocation: 'Pune outskirts',
+    progressPct: 62,
+    eta: 'Today, 6:40 PM',
+    updatedAt: 'Today, 4:15 PM',
+    events: trackingEvents.bk_301
+  },
+  bk_302: {
+    bookingId: 'bk_302',
+    currentLocation: 'Jaipur warehouse',
+    progressPct: 8,
+    eta: 'Tomorrow, 2:00 PM',
+    updatedAt: 'Today, 8:10 AM',
+    events: trackingEvents.bk_302
+  },
+  bk_303: {
+    bookingId: 'bk_303',
+    currentLocation: 'Coimbatore',
+    progressPct: 100,
+    eta: 'Delivered Aug 2',
+    updatedAt: 'Aug 2, 5:20 PM',
+    events: trackingEvents.bk_303
+  },
+  bk_304: {
+    bookingId: 'bk_304',
+    currentLocation: 'Ahmedabad',
+    progressPct: 100,
+    eta: 'Delivered Jul 29',
+    updatedAt: 'Jul 29, 6:00 PM',
+    events: trackingEvents.bk_304
+  }
+};
+
 export const bookings: Booking[] = [
-  { id: 'bk_301', loadId: 'ld_201', truckId: 'trk_101', loadTitle: 'Textile Rolls — 400 Bales', route: 'Mumbai → Pune', shipperName: 'Shreeji Textiles', transporterName: 'Mehta Logistics', amount: 21500, status: 'in-transit', progressPct: 62, eta: 'Today, 6:40 PM', createdAt: '2026-08-03', driverName: 'Suresh Yadav', driverPhone: '+91 98200 11234', vehicleNumber: 'MH12 GT 4521' },
-  { id: 'bk_302', loadId: 'ld_204', truckId: 'trk_104', loadTitle: 'Auto Components — OEM Supply', route: 'Jaipur → Delhi', shipperName: 'Rajputana Auto Parts', transporterName: 'North Star Carriers', amount: 29400, status: 'confirmed', progressPct: 8, eta: 'Tomorrow, 2:00 PM', createdAt: '2026-08-04', driverName: 'Vikram Singh', driverPhone: '+91 99110 22456', vehicleNumber: 'DL8C AY 5567' },
-  { id: 'bk_303', loadId: 'ld_205', truckId: 'trk_105', loadTitle: 'Packaged Cement — 500 Bags', route: 'Chennai → Coimbatore', shipperName: 'BuildRight Materials', transporterName: 'Coimbatore Freight Co', amount: 19900, status: 'delivered', progressPct: 100, eta: 'Delivered Aug 2', createdAt: '2026-07-31', driverName: 'Ramesh Kumar', driverPhone: '+91 90031 55678', vehicleNumber: 'TN09 BQ 7734' },
-  { id: 'bk_304', loadId: 'ld_202', truckId: 'trk_102', loadTitle: 'FMCG Cartons — Retail Distribution', route: 'Surat → Ahmedabad', shipperName: 'DailyNeeds Distributors', transporterName: 'Patel Roadways', amount: 9800, status: 'delivered', progressPct: 100, eta: 'Delivered Jul 29', createdAt: '2026-07-27', driverName: 'Bharat Patel', driverPhone: '+91 97250 88123', vehicleNumber: 'GJ01 AX 8890' }
+  { id: 'bk_301', loadId: 'ld_201', truckId: 'trk_101', loadTitle: 'Textile Rolls — 400 Bales', route: 'Mumbai → Pune', shipperName: 'Shreeji Textiles', transporterName: 'Mehta Logistics', amount: 21500, status: 'in-transit', progressPct: 62, eta: 'Today, 6:40 PM', createdAt: '2026-08-03', driverName: 'Suresh Yadav', driverPhone: '+91 98200 11234', vehicleNumber: 'MH12 GT 4521', escrow: escrowState.bk_301, tracking: shipmentTrackers.bk_301 },
+  { id: 'bk_302', loadId: 'ld_204', truckId: 'trk_104', loadTitle: 'Auto Components — OEM Supply', route: 'Jaipur → Delhi', shipperName: 'Rajputana Auto Parts', transporterName: 'North Star Carriers', amount: 29400, status: 'confirmed', progressPct: 8, eta: 'Tomorrow, 2:00 PM', createdAt: '2026-08-04', driverName: 'Vikram Singh', driverPhone: '+91 99110 22456', vehicleNumber: 'DL8C AY 5567', escrow: escrowState.bk_302, tracking: shipmentTrackers.bk_302 },
+  { id: 'bk_303', loadId: 'ld_205', truckId: 'trk_105', loadTitle: 'Packaged Cement — 500 Bags', route: 'Chennai → Coimbatore', shipperName: 'BuildRight Materials', transporterName: 'Coimbatore Freight Co', amount: 19900, status: 'delivered', progressPct: 100, eta: 'Delivered Aug 2', createdAt: '2026-07-31', driverName: 'Ramesh Kumar', driverPhone: '+91 90031 55678', vehicleNumber: 'TN09 BQ 7734', escrow: escrowState.bk_303, tracking: shipmentTrackers.bk_303 },
+  { id: 'bk_304', loadId: 'ld_202', truckId: 'trk_102', loadTitle: 'FMCG Cartons — Retail Distribution', route: 'Surat → Ahmedabad', shipperName: 'DailyNeeds Distributors', transporterName: 'Patel Roadways', amount: 9800, status: 'delivered', progressPct: 100, eta: 'Delivered Jul 29', createdAt: '2026-07-27', driverName: 'Bharat Patel', driverPhone: '+91 97250 88123', vehicleNumber: 'GJ01 AX 8890', escrow: escrowState.bk_304, tracking: shipmentTrackers.bk_304 }
 ];
 
 export const transactions: Transaction[] = [

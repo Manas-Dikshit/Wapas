@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Phone, MessageCircle, Copy, PackageCheck, Truck as TruckIcon } from 'lucide-react';
+import { Phone, MessageCircle, Copy, PackageCheck, Truck as TruckIcon, MapPinned } from 'lucide-react';
 import { toast } from 'sonner';
-import { bookings } from '@/lib/mock-data';
+import { bookings, shipmentTrackers } from '@/lib/mock-data';
 import { Timeline, type TimelineStep } from '@/components/tracking/timeline';
 import { Avatar, Progress, Skeleton } from '@/components/ui/primitives';
 import { Badge } from '@/components/ui/badge';
@@ -31,12 +31,59 @@ const baseSteps: Omit<TimelineStep, 'done' | 'active'>[] = [
 
 export default function TrackingPage({ params }: { params: { id: string } }) {
   const booking = bookings.find((b) => b.id === params.id) ?? bookings[0];
+  const initialTracker = useMemo(
+    () =>
+      shipmentTrackers[booking.id] ?? {
+        bookingId: booking.id,
+        currentLocation: booking.route.split(' → ')[0],
+        progressPct: booking.progressPct,
+        eta: booking.eta,
+        updatedAt: 'Just now',
+        events: []
+      },
+    [booking]
+  );
+
   const [copied, setCopied] = useState(false);
+  const [tracker, setTracker] = useState(initialTracker);
 
   const [originCity, destinationCity] = booking.route.split(' → ');
 
-  const doneCount = booking.status === 'delivered' ? 5 : booking.status === 'in-transit' ? Math.ceil((booking.progressPct / 100) * 4) : 1;
+  const doneCount =
+    tracker.events.length > 0 ? Math.min(5, tracker.events.length) : booking.status === 'delivered' ? 5 : booking.status === 'in-transit' ? Math.ceil((tracker.progressPct / 100) * 4) : 1;
   const steps: TimelineStep[] = baseSteps.map((s, i) => ({ ...s, done: i < doneCount, active: i === doneCount }));
+
+  function advanceStatus() {
+    if (tracker.progressPct >= 100) {
+      toast.info('Shipment already delivered');
+      return;
+    }
+
+    const nextPct = Math.min(100, tracker.progressPct + 18);
+    const nextLocation =
+      nextPct >= 100 ? destinationCity : nextPct >= 75 ? 'Pune outskirts' : nextPct >= 45 ? 'Bhiwandi' : nextPct >= 20 ? 'Nashik' : 'Mumbai';
+    const nextEta = nextPct >= 100 ? 'Delivered' : nextPct >= 75 ? 'Today, 6:40 PM' : nextPct >= 45 ? 'Today, 6:10 PM' : nextPct >= 20 ? 'Today, 5:35 PM' : 'Today, 5:00 PM';
+
+    setTracker({
+      ...tracker,
+      currentLocation: nextLocation,
+      progressPct: nextPct,
+      eta: nextEta,
+      updatedAt: 'Just now',
+      events: [
+        ...tracker.events,
+        {
+          id: `evt_${booking.id}_${tracker.events.length + 1}`,
+          bookingId: booking.id,
+          timestamp: 'Just now',
+          status: nextPct >= 100 ? 'delivered' : nextPct >= 75 ? 'out_for_delivery' : nextPct >= 20 ? 'checkpoint' : 'in_transit',
+          location: nextLocation,
+          note: nextPct >= 100 ? 'Proof of delivery recorded' : 'Driver update received via live tracking'
+        }
+      ]
+    });
+    toast.success('Live ETA refreshed', { description: `Current location: ${nextLocation}` });
+  }
 
   function copyId() {
     setCopied(true);
@@ -50,7 +97,7 @@ export default function TrackingPage({ params }: { params: { id: string } }) {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-display text-xl font-extrabold text-navy-600 sm:text-2xl">{booking.loadTitle}</h1>
-            <Badge variant={booking.status === 'delivered' ? 'success' : 'aqua'}>{booking.status.replace('-', ' ')}</Badge>
+            <Badge variant={tracker.progressPct >= 100 ? 'success' : 'aqua'}>{tracker.progressPct >= 100 ? 'delivered' : 'in transit'}</Badge>
           </div>
           <button onClick={copyId} className="mt-1 flex items-center gap-1 text-xs text-navy-400 hover:text-navy-600">
             #{booking.id.toUpperCase()} <Copy className="h-3 w-3" /> {copied && <span className="text-emerald-500">Copied</span>}
@@ -59,19 +106,27 @@ export default function TrackingPage({ params }: { params: { id: string } }) {
         <p className="font-display text-xl font-extrabold text-navy-600">{formatINR(booking.amount)}</p>
       </div>
 
-      <LiveTrackingMap originCity={originCity} destinationCity={destinationCity} progressPct={booking.progressPct} />
-
+      <LiveTrackingMap originCity={originCity} destinationCity={destinationCity} progressPct={tracker.progressPct} />
 
       <div className="card-surface p-5 sm:p-6">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-bold text-navy-600">{booking.route}</p>
-          <p className="text-xs font-semibold text-blue-500">ETA {booking.eta}</p>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-bold text-navy-600">{booking.route}</p>
+            <p className="mt-1 flex items-center gap-1.5 text-[11px] font-semibold text-navy-400">
+              <MapPinned className="h-3.5 w-3.5 text-aqua-500" /> Current stop: {tracker.currentLocation}
+            </p>
+          </div>
+          <p className="text-xs font-semibold text-blue-500">ETA {tracker.eta}</p>
         </div>
-        <Progress value={booking.progressPct} className="mt-3" />
+        <Progress value={tracker.progressPct} className="mt-3" />
         <div className="mt-2 flex justify-between text-[11px] text-navy-300">
           <span>Picked up</span>
-          <span>{booking.progressPct}% complete</span>
+          <span>{tracker.progressPct}% complete</span>
           <span>Delivered</span>
+        </div>
+        <div className="mt-4 flex items-center justify-between rounded-2xl border border-navy-100 bg-navy-50 px-3 py-2.5 text-[11px] text-navy-400">
+          <span>Last update: {tracker.updatedAt}</span>
+          <Button size="sm" variant="outline" onClick={advanceStatus}>Advance status</Button>
         </div>
       </div>
 
@@ -105,7 +160,7 @@ export default function TrackingPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      {booking.status === 'delivered' && (
+      {tracker.progressPct >= 100 && (
         <div className="card-surface flex items-center gap-4 p-5 sm:p-6">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500">
             <PackageCheck className="h-6 w-6" />
