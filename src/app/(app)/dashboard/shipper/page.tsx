@@ -314,7 +314,7 @@ export default function ShipperDashboardPage() {
           <h1 className="font-display text-2xl font-extrabold text-navy-600 sm:text-3xl">Good to see you, {firstName} 👋</h1>
           <p className="mt-1 text-sm text-navy-400">Track your open loads and keep your network moving.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link href="/marketplace" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}>
             <Star className="h-4 w-4" /> Saved transporters
           </Link>

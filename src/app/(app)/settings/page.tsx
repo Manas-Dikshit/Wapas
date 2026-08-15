@@ -63,7 +63,7 @@ export default function SettingsPage() {
         <div className="py-3">
           <p className="text-sm font-semibold text-navy-600">Two-factor authentication</p>
           <p className="text-xs text-navy-400">Add an extra layer of security to your account.</p>
-          <button className="mt-3 text-sm font-bold text-blue-500">Enable 2FA</button>
+          <button className="mt-3 text-sm font-bold text-blue-500 transition-colors hover:text-blue-600">Enable 2FA</button>
         </div>
       </SettingsGroup>
 

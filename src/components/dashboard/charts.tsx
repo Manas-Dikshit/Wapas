@@ -37,7 +37,7 @@ export type UtilizationPoint = { name: string; value: number };
 
 export function UtilizationChart({ data = utilizationSeries }: { data?: UtilizationPoint[] }) {
   return (
-    <div className="flex items-center gap-6">
+    <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
       <div className="h-[160px] w-[160px] shrink-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -50,7 +50,7 @@ export function UtilizationChart({ data = utilizationSeries }: { data?: Utilizat
           </PieChart>
         </ResponsiveContainer>
       </div>
-      <div className="space-y-2.5">
+      <div className="w-full space-y-2.5 sm:w-auto">
         {data.map((s, i) => (
           <div key={s.name} className="flex items-center gap-2 text-sm">
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />

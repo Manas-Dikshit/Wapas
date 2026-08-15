@@ -19,7 +19,7 @@ export function Hero() {
             <span className="h-1.5 w-1.5 rounded-full bg-aqua-400" />
             {hero.badge}
           </div>
-          <h1 className="font-display text-[2.5rem] font-extrabold leading-[1.08] text-navy-600 sm:text-6xl">
+          <h1 className="font-display text-[2.5rem] font-extrabold leading-[1.14] text-navy-600 sm:leading-[1.08] sm:text-6xl">
             {hero.titleA}
             <br />
             is a <span className="text-blue-500">{hero.titleHighlight}</span>

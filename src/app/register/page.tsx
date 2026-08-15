@@ -90,7 +90,7 @@ export default function RegisterPage() {
               <p className="text-xs text-navy-400">
                 Open it on <span className="font-semibold">this same device/browser</span> — your account and profile will be created automatically.
               </p>
-              <button className="text-xs font-semibold text-blue-500" onClick={() => setSent(false)}>
+              <button className="text-xs font-semibold text-blue-500 transition-colors hover:text-blue-600" onClick={() => setSent(false)}>
                 Use a different email
               </button>
             </div>

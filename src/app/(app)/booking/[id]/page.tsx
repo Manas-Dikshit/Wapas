@@ -47,19 +47,19 @@ export default function BookingPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 pb-6 animate-fade-up">
-      <div className="flex items-center justify-center gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-3 sm:gap-x-3">
         {steps.map((s, i) => (
-          <div key={s} className="flex items-center gap-3">
+          <div key={s} className="flex items-center gap-2 sm:gap-3">
             <div
               className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors',
+                'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors',
                 i < step ? 'bg-emerald-500 text-white' : i === step ? 'bg-blue-500 text-white' : 'bg-navy-100 text-navy-400'
               )}
             >
               {i < step ? <Check className="h-4 w-4" /> : i + 1}
             </div>
             <span className={cn('text-xs font-semibold', i === step ? 'text-navy-600' : 'text-navy-300')}>{s}</span>
-            {i < steps.length - 1 && <div className="h-px w-8 bg-navy-100" />}
+            {i < steps.length - 1 && <div className="h-px w-4 bg-navy-100 sm:w-8" />}
           </div>
         ))}
       </div>

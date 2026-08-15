@@ -129,13 +129,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span className="font-display text-lg font-extrabold text-navy-600">Wapas</span>
           </Link>
           <div className="flex items-center gap-2">
-            <Link href="/notifications" className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white border border-navy-100">
-              <Bell className="h-[17px] w-[17px] text-navy-500" />
+            <Link
+              href="/notifications"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white border border-navy-100 transition-colors hover:bg-navy-50"
+            >
+              <Bell className="h-[18px] w-[18px] text-navy-500" />
               {unreadCount > 0 && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-aqua-400 ring-2 ring-white" />}
             </Link>
             <button
               onClick={() => setMobileMenuOpen((v) => !v)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white border border-navy-100"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white border border-navy-100 transition-colors hover:bg-navy-50"
               aria-label="Open menu"
             >
               <Menu className="h-[18px] w-[18px] text-navy-500" />
