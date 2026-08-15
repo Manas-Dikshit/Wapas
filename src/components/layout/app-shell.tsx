@@ -19,7 +19,7 @@ import {
   Map
 } from 'lucide-react';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/primitives';
 import { notifications } from '@/lib/mock-data';
@@ -46,6 +46,7 @@ const mobileNavItems: { href: string; label: string; icon: typeof LayoutDashboar
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const reduce = useReducedMotion();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const unreadCount = notifications.filter((n) => !n.read).length;
   const { profile } = useCurrentProfile();
@@ -191,7 +192,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           )}
         </AnimatePresence>
 
-        <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-12 lg:pt-8">{children}</main>
+        <main className="mx-auto max-w-[1400px] px-4 pb-28 pt-5 sm:px-6 lg:px-8 lg:pb-12 lg:pt-8">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={pathname}
+              initial={reduce ? false : { opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduce ? undefined : { opacity: 0, y: -6 }}
+              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
       </div>
 
       {/* Mobile bottom nav */}
