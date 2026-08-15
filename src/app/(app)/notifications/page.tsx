@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Bell, CreditCard, Sparkles, Truck } from 'lucide-react';
 import { notifications as initialNotifications } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
+import { Stagger, StaggerItem } from '@/components/ui/motion';
 
 const iconFor = { booking: Truck, payment: CreditCard, system: Bell, ai: Sparkles } as const;
 const colorFor = {
