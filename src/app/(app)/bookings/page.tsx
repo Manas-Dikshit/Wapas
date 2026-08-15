@@ -6,6 +6,7 @@ import { ChevronRight } from 'lucide-react';
 import { Tabs } from '@/components/ui/primitives';
 import { Progress } from '@/components/ui/primitives';
 import { Badge } from '@/components/ui/badge';
+import { Stagger, StaggerItem } from '@/components/ui/motion';
 import { bookings } from '@/lib/mock-data';
 import { formatINR } from '@/lib/utils';
 
@@ -38,9 +39,10 @@ export default function BookingsPage() {
         />
       </div>
 
-      <div className="space-y-3">
+      <Stagger className="space-y-3" stagger={0.05}>
         {filtered.map((b) => (
-          <Link key={b.id} href={`/tracking/${b.id}`} className="card-surface flex items-center gap-4 p-4 transition-all hover:-translate-y-0.5 hover:shadow-floating sm:p-5">
+          <StaggerItem key={b.id}>
+            <Link href={`/tracking/${b.id}`} className="card-surface flex items-center gap-4 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-floating sm:p-5">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="truncate text-sm font-bold text-navy-600">{b.loadTitle}</p>
@@ -62,9 +64,10 @@ export default function BookingsPage() {
               <p className="text-xs text-navy-400">{b.eta}</p>
             </div>
             <ChevronRight className="h-4 w-4 shrink-0 text-navy-300" />
-          </Link>
+            </Link>
+          </StaggerItem>
         ))}
-      </div>
+      </Stagger>
     </div>
   );
 }

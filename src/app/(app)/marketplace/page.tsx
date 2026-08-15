@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { PackageSearch } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button-variants';
 import { Tabs } from '@/components/ui/primitives';
 import { Stagger, StaggerItem } from '@/components/ui/motion';
 import { FilterBar } from '@/components/marketplace/filter-bar';

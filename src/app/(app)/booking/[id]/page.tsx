@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, notFound } from 'next/navigation';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Check, CreditCard, Loader2, Shield, Smartphone, Wallet as WalletIcon } from 'lucide-react';
 import { bookings, loads, trucks } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ export default function BookingPage({ params }: { params: { id: string } }) {
   if (!item) notFound();
 
   const [step, setStep] = useState(0);
+  const reduce = useReducedMotion();
   const [method, setMethod] = useState<'upi' | 'card' | 'wallet'>('upi');
   const [processing, setProcessing] = useState(false);
 
@@ -64,8 +66,16 @@ export default function BookingPage({ params }: { params: { id: string } }) {
         ))}
       </div>
 
-      {step === 0 && (
-        <div className="card-surface p-6">
+      <AnimatePresence mode="wait" initial={false}>
+        {step === 0 && (
+          <motion.div
+            key="review"
+            initial={reduce ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduce ? undefined : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="card-surface p-6">
           <h2 className="font-display text-lg font-bold text-navy-600">Review booking</h2>
           {!load && truck && (
             <div className="mt-3 flex items-center gap-2">
@@ -108,11 +118,19 @@ export default function BookingPage({ params }: { params: { id: string } }) {
           <Button className="mt-6 w-full" size="lg" onClick={() => setStep(1)}>
             Continue to payment
           </Button>
-        </div>
-      )}
+            </div>
+          </motion.div>
+        )}
 
-      {step === 1 && (
-        <div className="card-surface p-6">
+        {step === 1 && (
+          <motion.div
+            key="payment"
+            initial={reduce ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduce ? undefined : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="card-surface p-6">
           <h2 className="font-display text-lg font-bold text-navy-600">Choose payment method</h2>
           <div className="mt-5 grid grid-cols-3 gap-3">
             <PayOption icon={<Smartphone className="h-5 w-5" />} label="UPI" active={method === 'upi'} onClick={() => setMethod('upi')} />
@@ -148,11 +166,19 @@ export default function BookingPage({ params }: { params: { id: string } }) {
             {processing && <Loader2 className="h-4 w-4 animate-spin" />}
             {processing ? 'Processing payment…' : `Pay ${formatINR(amount)}`}
           </Button>
-        </div>
-      )}
+            </div>
+          </motion.div>
+        )}
 
-      {step === 2 && (
-        <div className="card-surface flex flex-col items-center p-10 text-center animate-scale-in">
+        {step === 2 && (
+          <motion.div
+            key="confirmed"
+            initial={reduce ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduce ? undefined : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="card-surface flex flex-col items-center p-10 text-center animate-scale-in">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
             <Check className="h-8 w-8" />
           </div>
@@ -174,8 +200,10 @@ export default function BookingPage({ params }: { params: { id: string } }) {
               Track shipment
             </Button>
           </div>
-        </div>
-      )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

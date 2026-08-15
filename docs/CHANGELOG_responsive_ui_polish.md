@@ -273,3 +273,116 @@ colours or gradients.
 `npm run typecheck` and `npx next lint` both pass on the touched files. No
 interactive element in the touched set lost its focus/active feedback — the
 global `:focus-visible` rule and `buttonVariants` focus ring still apply.
+
+---
+
+## Micro-interactions & page transitions
+
+Motion pass on top of the completed responsive + micro-polish stages. Scope is
+**visual/motion only** — no logic, data-fetching, routes, or `.sql` touched,
+and nothing from the prior stages was re-litigated. Reuses the existing motion
+language (`motion.tsx`: `Reveal`/`Stagger`/`StaggerItem`, shared
+`EASE = [0.22, 1, 0.36, 1]`). All JS-driven motion gates on
+`useReducedMotion()` (so the global CSS `prefers-reduced-motion` rule in
+`globals.css` plus Framer's hook both collapse it); CSS-driven motion relies on
+the existing global media query. All additions are fast/restrained (150–300ms)
+to match the premium tone already set by `hero.tsx`.
+
+### 1. Route-level page transitions — `src/components/layout/app-shell.tsx`
+
+Wrapped the `(app)` route-group main content in `<AnimatePresence
+mode="wait" initial={false}>`, keyed by `pathname`, so every route change
+fades in with a slight upward slide.
+
+| Prop | Value |
+| --- | --- |
+| Enter | `{ opacity: 0, y: 10 }` → `{ opacity: 1, y: 0 }` |
+| Exit | `{ opacity: 0, y: -6 }` |
+| Duration / easing | `0.16s`, `[0.22, 1, 0.36, 1]` |
+| Reduced motion | `initial={reduce ? false : …}` + `exit={reduce ? undefined : …}` → instant swap |
+
+`mode="wait"` keeps the exiting page in-flow while it fades (no height
+collapse); `initial={false}` prevents a double-animation on first load against
+the pages' own `animate-fade-up`. The 160ms exit is short enough not to delay
+perceived load or fight the Skeleton loading states from prior stages.
+
+### 2. Button micro-interaction — `src/components/ui/button.tsx`
+
+Converted the `Button` component to `motion.button` and replaced the blanket
+CSS `active:scale-[0.98]` (previously on every variant) with a Framer
+`whileHover`/`whileTap` applied **only to `primary` and `dark`** variants, so
+ghost/outline/secondary instances stay visually quiet.
+
+| Prop | Value |
+| --- | --- |
+| `whileHover` | `{ scale: 1.02 }` |
+| `whileTap` | `{ scale: 0.98 }` |
+| Duration / easing | `0.15s`, `[0.22, 1, 0.36, 1]` — snappy, no bounce |
+| Reduced motion | `useReducedMotion()` → handlers `undefined` |
+
+`buttonVariants` (used on `<Link>` CTAs) is unchanged, so server-rendered
+primary links keep their `hover:bg-*` affordance. `ButtonProps` omits the
+native drag/animation handlers that collide with Framer's typing.
+
+### 3. Card lift consistency — `marketplace/cards.tsx`, `marketplace/intermediate-stops.tsx`, `(app)/bookings/page.tsx`, `landing/sections.tsx`
+
+Audited every `hover:-translate-y-0.5 hover:shadow-floating` instance and
+standardized timing/easing + lift magnitude:
+
+- **Bookings rows** (`bookings/page.tsx`): `transition-all` (default 150ms) →
+  `transition-all duration-300`, matching the marketplace cards' 300ms.
+- **Landing feature cards** (`landing/sections.tsx`): `hover:-translate-y-1`
+  (4px) → `hover:-translate-y-0.5` (2px), matching the marketplace cards.
+- Marketplace `cards.tsx` / `intermediate-stops.tsx` were already on
+  `duration-300` + `-translate-y-0.5` — verified as the canonical target.
+
+Now every card lift is `transition-all duration-300 hover:-translate-y-0.5
+hover:shadow-floating`. CSS-driven → covered by the global reduced-motion rule.
+
+### 4. List/grid entrance stagger — `(app)/bookings/page.tsx`, `(app)/notifications/page.tsx`
+
+Reused the existing `Stagger`/`StaggerItem` fade-up pattern (already used by
+the marketplace grid, so this integrates cleanly rather than adding a new
+mechanism) for the two lists that previously rendered with no entrance:
+
+| List | Stagger |
+| --- | --- |
+| Bookings rows | `stagger={0.05}` |
+| Notifications rows | `stagger={0.04}` |
+
+Each item fades up from `y: 14`, `duration 0.45s`, `[0.22, 1, 0.36, 1]`.
+Framer's `initial`/`animate` run only on mount — updating `items` (e.g.
+"Mark all read") re-renders but does **not** re-trigger the entrance. Reduced
+motion handled by `Stagger`'s `useReducedMotion()`.
+
+### 5. Toast/notification entrance — verified, no change
+
+`<Toaster position="top-center" richColors closeButton />` (`src/app/layout.tsx`)
+uses Sonner's default entrance (slide + fade, ~250ms). That is consistent with
+the new fade/slide page + list language and already respects the OS
+`prefers-reduced-motion` setting internally. No change needed — adding custom
+`toastOptions` would introduce a third motion style for no benefit.
+
+### 6. Booking flow step transitions — `src/app/(app)/booking/[id]/page.tsx`
+
+Replaced the instant conditional re-render of the 3-step stepper
+(Review → Payment → Confirmed) with `<AnimatePresence mode="wait"
+initial={false}>` wrapping each step's `card-surface` in a `motion.div` keyed
+by step name.
+
+| Prop | Value |
+| --- | --- |
+| Enter | `{ opacity: 0, y: 12 }` → `{ opacity: 1, y: 0 }` |
+| Exit | `{ opacity: 0, y: -8 }` |
+| Duration / easing | `0.2s`, `[0.22, 1, 0.36, 1]` |
+| Reduced motion | `useReducedMotion()` → `initial false` + no exit (instant swap) |
+
+The Confirmed step keeps its existing `animate-scale-in` CSS inside the fade
+wrapper, so the two entrances compose rather than clash. The stepper dots/step
+logic and `confirmPayment` timing are untouched.
+
+### Re-verification
+
+`npm run typecheck` and `npx next lint` both pass on the touched files. All six
+items are either JS-motion gated on `useReducedMotion()` or CSS-motion covered
+by the global `prefers-reduced-motion` rule — no reduced-motion regression.

@@ -52,7 +52,7 @@ export function Features() {
           {featuresContent.map((f) => {
             const Icon = iconMap[f.icon] ?? Brain;
             return (
-              <StaggerItem key={f.title} className="group rounded-xl3 border border-navy-100 bg-white p-6 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-floating">
+              <StaggerItem key={f.title} className="group rounded-xl3 border border-navy-100 bg-white p-6 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-floating">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-500 text-white transition-transform duration-300 group-hover:scale-110">
                   <Icon className="h-5 w-5" />
                 </div>

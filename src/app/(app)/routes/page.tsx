@@ -4,7 +4,7 @@ import { routes } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
 import { RouteHighway } from '@/components/marketplace/route-strip';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button-variants';
 
 export default function RoutesPage() {
   const allRoutes = Object.values(routes);
