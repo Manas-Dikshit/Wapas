@@ -324,6 +324,15 @@ ghost/outline/secondary instances stay visually quiet.
 primary links keep their `hover:bg-*` affordance. `ButtonProps` omits the
 native drag/animation handlers that collide with Framer's typing.
 
+**Build-fix note (module split):** because `button.tsx` is now a
+`'use client'` module, its `buttonVariants` export was a Client Reference that
+server components (`not-found`, `routes`, `marketplace/[id]`) could not call at
+render time — this threw `(0, o.d) is not a function` and broke `next build`
+for every page. Fixed by extracting the pure CVA into a server-safe
+`src/components/ui/button-variants.ts` (no `'use client'`) and pointing all
+eleven `buttonVariants` importers at it; `button.tsx` now owns only the
+interactive `Button` (motion.button) and no longer re-exports the variants.
+
 ### 3. Card lift consistency — `marketplace/cards.tsx`, `marketplace/intermediate-stops.tsx`, `(app)/bookings/page.tsx`, `landing/sections.tsx`
 
 Audited every `hover:-translate-y-0.5 hover:shadow-floating` instance and
