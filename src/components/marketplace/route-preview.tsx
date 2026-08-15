@@ -22,6 +22,16 @@ export function RoutePreview({ route, className }: { route: Route; className?: s
         className
       )}
     >
+      <div className="flex items-center justify-between gap-3 border-b border-navy-100 bg-white/60 px-4 py-2.5 text-[11px] font-semibold text-navy-500">
+        <span className="flex items-center gap-1.5">
+          <Navigation className="h-3.5 w-3.5 text-aqua-500" />
+          via {route.highway}
+        </span>
+        <span className="rounded-full bg-aqua-50 px-2 py-0.5 text-[10px] font-bold text-aqua-600">
+          {midStops.length} stops
+        </span>
+      </div>
+
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

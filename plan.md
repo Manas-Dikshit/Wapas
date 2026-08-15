@@ -1,192 +1,283 @@
-# Plan — Add Route Detail (Waypoint / Intermediate-Stop) Feature
+# Plan — MVP Feature Expansion: Escrow, Tracking, and Negotiation
 
 ## Goal
 
-When a truck travels a long route (e.g. **Bhubaneswar → Delhi**), the app must
-show the **full intermediate path** (the highways and middle cities the truck
-passes through). Any shipper with a load whose pickup or drop city lies **on
-that path** can place a *mid-route pickup* or *return (backhaul) order* against
-that truck — filling empty legs and idle capacity.
+Turn the current route-aware marketplace from a polished demo into a realistic freight marketplace by adding the three highest-value MVP workflows:
 
-Currently trucks/loads only store `originCity` and `destinationCity` (see
-`Truck`/`Load` in `src/lib/types.ts`). There is no notion of the cities the
-truck passes through, so mid-route matching is impossible.
+1. Payment escrow + milestone payouts
+2. Live tracking + ETA updates
+3. Bid / counteroffer negotiation
+
+This keeps the product focused on trust, operational visibility, and business realism without bloating scope beyond the current app architecture.
 
 ---
 
-## 1. Data Model
+## 1. Phase 1 — Escrow + milestone payouts
 
-### New type — `Route` (in `src/lib/types.ts`)
+### Why it matters
 
-```ts
-export interface RouteStop {
-  city: string;
-  state?: string;
-  kmFromOrigin: number;      // cumulative distance along the route
-  isHighwayJunction?: boolean;
-}
+Freight transactions need trust. A shipper wants certainty that they pay only when milestones are met, and a transporter wants assurance that the agreed amount is reserved before dispatch.
 
-export interface Route {
-  originCity: string;
-  destinationCity: string;
-  distanceKm: number;
-  highway: string;           // e.g. "NH-16 → NH-49 → NH-44"
-  stops: RouteStop[];        // ordered list: origin → ... → destination
-}
-```
+### Scope
 
-### Changes to `Truck` / `Load`
-
-Add an optional `route?: Route` field to both `Truck` and `Load` so a listing
-can carry its full path. Keep it optional so short-haul or un-mapped trips still
-work.
-
-### Supabase schema (new migration `0004_route_waypoints.sql`)
-
-Add a `route_waypoints` table (origin/destination stays on `trucks`/`loads`):
-
-```sql
-create table if not exists public.route_waypoints (
-  id            uuid primary key default gen_random_uuid(),
-  truck_id      uuid references public.trucks(id) on delete cascade,   -- nullable
-  load_id       uuid references public.loads(id) on delete cascade,    -- nullable
-  seq           int  not null,               -- ordering (0 = origin)
-  city          text not null,
-  state         text,
-  km_from_origin numeric(8,2),
-  is_highway_junction boolean not null default false,
-  created_at    timestamptz not null default now()
-);
-
--- RLS: visible to all authenticated users (read), owner writes.
-create index if not exists route_waypoints_truck_idx on public.route_waypoints(truck_id, seq);
-create index if not exists route_waypoints_load_idx  on public.route_waypoints(load_id, seq);
-```
-
-Add RLS policies in `0003_rls_policies.sql` (or a new migration) mirroring the
-existing owner/party-scoped pattern using `current_profile_id()`.
-
-Update `src/lib/supabase/types.ts` to mirror the new table.
-
----
-
-## 2. Mock Data (in `src/lib/mock-data.ts`)
-
-Create a `routeRepository` (a lookup keyed by `"Origin→Dest"`) so both trucks
-and loads can reuse the same path definitions. Add realistic Indian highway
-routes, e.g.:
-
-- `Bhubaneswar → Delhi`: NH-16 → NH-49 → NH-53 → NH-44, passing **Cuttack,
-  Sambalpur, Bargarh, Raipur, Bilaspur, Katni, Jhansi, Agra**.
-- `Mumbai → Delhi`: NH-48 via **Nashik, Dhule, Indore, Gwalior**.
-- `Bengaluru → Delhi`: NH-44 via **Chitradurga, Hyderabad, Nagpur, Jhansi**.
-
-Attach `route` to the existing mock trucks/loads that match these corridors, and
-add a `Bhubaneswar → Delhi` truck + load so the demo has a clear showcase case.
-
----
-
-## 3. UI / UX
-
-### a) Marketplace detail page — `src/app/(app)/marketplace/[id]/page.tsx`
-
-Replace the simple origin→destination pill with a **route strip / breadcrumb**:
-
-- Render each `route.stop` as a chip on a horizontal scroll line (origin on the
-  left, destination on the right, highway label above).
-- Highlight the primary highway (e.g. "via NH-44").
-- Add a **"Mid-route / return stops available"** badge listing the stop cities
-  so shippers immediately see where they can drop/pick.
-
-### b) Marketplace list card — `src/components/marketplace/cards.tsx`
-
-Show a compact "via {highway} · N stops" hint on the card so the route detail is
-discoverable before opening the detail page.
-
-### c) Post a load — `src/app/(app)/post-load/page.tsx`
-
-When the shipper picks origin + destination, auto-suggest a route and let them
-add/remove intermediate pickup/drop cities. These become `route` stops.
-
-### d) New **Route Explorer** page (recommended, optional in v1)
-
-A dedicated `src/app/(app)/routes/page.tsx` listing all known routes with their
-highway + stop cities. From any route, shippers can "Request pickup at a stop"
-or "Request return load" → pre-fills a load at that waypoint. Add a link in the
-marketplace nav / dashboard.
-
-### e) Matching logic
-
-`filteredTrucks` in `marketplace/page.tsx` currently matches only
-origin/destination cities. Extend so a load matches a truck if the load's
-origin **or** destination lies within the truck's `route.stops` (mid-route
-pickup/drop), not just the exact endpoints. Add a `RoutePoint`-style marker or a
-"On-route" badge on matched cards.
-
----
-
-## 4. Component Reuse
-
-- Add `src/components/marketplace/route-strip.tsx` — the horizontal waypoint
-  breadcrumb, reused in detail page, cards, and route explorer.
-- Add `src/components/marketplace/route-highway.tsx` — highway label chip.
-- Tracking map (`src/components/tracking/map-placeholder.tsx`) can later render
-  the waypoints as a polyline instead of the stylized SVG, staying isolated for
-  a drop-in real map SDK.
-
----
-
-## 5. Out of Scope / Future (v2)
-
-- Live polyline routing from a map API (OSRM / Google Directions) instead of the
-  curated `routeRepository` — keep the `Route` shape so swapping is trivial.
-- Automated empty-leg return matching using the stops (defer to
-  `backhaul_match_score()` enhancement).
-- Editing routes after posting (currently create-only).
-
----
-
-## 6. Build Order
-
-1. Add `Route`/`RouteStop` types to `src/lib/types.ts`. — **DONE**
-2. Add `route` field to `Truck`/`Load` + `route_waypoints` table in
-   `0004_route_waypoints.sql` and update `supabase/types.ts`. — **DONE**
-3. Build `routeRepository` in `mock-data.ts`, add a Bhubaneswar→Delhi showcase
-   route, wire to existing trucks/loads. — **DONE**
-4. Build `route-strip.tsx` + `route-highway.tsx` components. — **DONE**
-5. Update marketplace detail page, list cards, and post-load. — **DONE**
-6. (Optional) Route Explorer page + match-by-waypoint filter. — **DONE**
-7. Run `npm run lint` and `npm run typecheck`; verify with `npm run dev`. — **DONE**
-   (lint ✔ clean, typecheck ✔ clean)
-
----
-
-## Checklist
+Add a lightweight money-holding and release flow for bookings that are accepted and in transit.
 
 ### Data model
-- [x] `Route` / `RouteStop` types in `src/lib/types.ts`
-- [x] `route?: Route` on `Truck` and `Load`
-- [x] `0004_route_waypoints.sql` migration (table + RLS)
-- [x] `route_waypoints` mirror in `src/lib/supabase/types.ts`
 
-### Mock data
-- [x] `routes` repository + `routeBetween()` helper in `mock-data.ts`
-- [x] Bhubaneswar → Delhi showcase route (NH-16 → NH-49 → NH-53 → NH-44 via
-      Cuttack, Sambalpur, Bargarh, Raipur, Bilaspur, Katni, Jhansi, Agra)
-- [x] Routes for Mumbai→Delhi, Bengaluru→Delhi, Chennai→Bengaluru, Jaipur→Delhi,
-      Kolkata→Lucknow, Nagpur→Indore
-- [x] New `trk_109` Bhubaneswar→Delhi truck in the mock fleet
-- [x] Routes auto-attached to matching existing trucks/loads
+Add new mock/Supabase-friendly structures:
 
-### UI
-- [x] `route-strip.tsx` (waypoint breadcrumb) + `route-highway.tsx` (highway chip)
-- [x] Marketplace detail page: full-route block + "Mid-route pickup available"
-- [x] Marketplace list cards: `via {highway}` + "N mid stops" badge
-- [x] Waypoint-aware truck matching (passing-through city)
-- [x] `/routes` Route Explorer page (stops, highway, request pickup CTA)
-- [x] "Routes" nav item in `app-shell.tsx`
-- [x] Post-load: corridor suggestion card + query-param prefill
+```ts
+interface EscrowMilestone {
+  id: string;
+  bookingId: string;
+  label: string;
+  amount: number;
+  status: 'pending' | 'released' | 'disputed';
+  dueAt?: string;
+}
 
-### Verification
-- [x] `npm run typecheck` passes
-- [x] `npm run lint` passes (0 warnings/errors)
+interface PaymentEscrow {
+  id: string;
+  bookingId: string;
+  totalAmount: number;
+  releasedAmount: number;
+  status: 'held' | 'partially_released' | 'released';
+  milestones: EscrowMilestone[];
+}
+```
+
+### UI / UX
+
+- Booking confirmation screen shows: "Funds held in escrow"
+- Booking detail shows milestone status cards
+- Shipper sees: "Release payment at pickup / delivery / milestone completion"
+- Transporter sees: "Payout pending approval" or "Escrow released"
+
+### User flow
+
+- Shipper books a load or truck
+- Amount is placed in escrow
+- Milestone 1: pickup confirmation releases X%
+- Milestone 2: delivery confirmation releases remaining amount
+- Disputes can be marked and reviewed by admin
+
+### Acceptance criteria
+
+- A booking can be created with escrow status visible
+- Milestone amounts are displayed clearly
+- Releasing funds updates both the booking and wallet state
+- Escrow state is visible on transporter and shipper dashboards
+
+### Build order
+
+1. Add escrow and milestone types to `src/lib/types.ts`
+2. Extend mock bookings with escrow state in `src/lib/mock-data.ts`
+3. Add booking detail/payment status components
+4. Add dashboard widgets for escrow summary and payout status
+5. Validate with lint/typecheck/build
+
+---
+
+## 2. Phase 2 — Live tracking + ETA updates
+
+### Why it matters
+
+The app already has the booking and route context. The next missing ingredient is operational visibility: where is the truck, and when will it arrive?
+
+### Scope
+
+Add tracking states and a lightweight ETA timeline for active shipments.
+
+### Data model
+
+```ts
+interface TrackingEvent {
+  id: string;
+  bookingId: string;
+  timestamp: string;
+  status: 'picked_up' | 'in_transit' | 'checkpoint' | 'delivered';
+  location: string;
+  note?: string;
+}
+
+interface ShipmentTracker {
+  bookingId: string;
+  currentLocation: string;
+  progressPct: number;
+  eta: string;
+  updatedAt: string;
+  events: TrackingEvent[];
+}
+```
+
+### UI / UX
+
+- Booking detail page shows a route progress bar with live ETA
+- Tracking page includes map placeholder + milestone timeline
+- Transporter can update status from phone-friendly mobile layout
+- Shipper gets push-style event feed notifications
+
+### User flow
+
+- Booking enters transit
+- Driver updates checkpoint or route progress
+- ETA recalculates based on current position and last event
+- Status feed is visible to shipper and admin
+
+### Acceptance criteria
+
+- Active bookings show a live progress tracker
+- ETA updates when shipment status changes
+- Milestone timeline is visible and chronological
+- Tracking data works in demo mode with mock events
+
+### Build order
+
+1. Extend booking/tracking types and mock fixtures
+2. Add tracking timeline component and ETA badge
+3. Tie booking detail and dashboard cards to tracking data
+4. Add shipment status actions for transporter role
+5. Validate with demo flows and build checks
+
+---
+
+## 3. Phase 3 — Bid / counteroffer flow
+
+### Why it matters
+
+A marketplace becomes more realistic when transporters can negotiate instead of instantly taking a job. This creates demand for quote management and improves conversion.
+
+### Scope
+
+Allow a transporter to bid on a specific load or respond with a counteroffer to a shipper request.
+
+### Data model
+
+```ts
+interface FreightQuote {
+  id: string;
+  loadId?: string;
+  truckId?: string;
+  shipperId: string;
+  transporterId: string;
+  offeredAmount: number;
+  proposedEta: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'countered';
+  note?: string;
+}
+```
+
+### UI / UX
+
+- Load detail page shows “Send a quote” CTA
+- Transporter can quote price + ETA + notes
+- Shipper can accept, reject, or counteroffer
+- Dashboard shows quote pipeline summary
+
+### User flow
+
+- Shipper posts a load
+- Transporter views the job and sends quote
+- Shipper evaluates quote
+- Shipper accepts, rejects, or counteroffers
+- Accepted quote turns into booking/escrow flow
+
+### Acceptance criteria
+
+- A quote can be created from a load/truck card
+- Quote status is stored and visible in dashboards
+- Accepting a quote creates the booking flow
+- Counteroffers can be created without leaving the app
+
+### Build order
+
+1. Add quote types and mock quote data
+2. Add quote submission UI on load detail pages
+3. Add quote list and status view in shipper/transporter dashboards
+4. Connect accepted quotes into booking creation pipeline
+5. Validate with flow-driven mock interactions
+
+---
+
+## 4. Recommended implementation order
+
+1. Escrow + milestone payouts
+2. Live tracking + ETA updates
+3. Bid / counteroffer flow
+
+Why this order:
+
+- Escrow gives payment trust before shipping becomes operationally heavy.
+- Tracking creates real-time confidence and makes status updates meaningful.
+- Negotiation unlocks marketplace dynamics after the app already feels operational.
+
+---
+
+## 5. Shared technical notes
+
+### Data patterns
+
+Use the same mock-first approach as the existing app:
+
+- keep data in `src/lib/mock-data.ts`
+- add type interfaces in `src/lib/types.ts`
+- create new UI cards and action components under `src/components/`
+- keep Supabase-ready schema structures parallel to the mock objects
+
+### Dashboard impact
+
+Each phase should add visible UI in:
+
+- shipper dashboard
+- transporter dashboard
+- admin analytics panel
+- booking detail flow
+
+### Avoid overbuilding
+
+For MVP, do not implement:
+
+- multi-asset fleet accounting
+- full payment gateway integration
+- live map SDK routing
+- complex dispute arbitration
+
+These can come after the three core workflows are proven.
+
+---
+
+## 6. Success metrics
+
+By the end of Phase 3, the app should support:
+
+- a booking that can be paid and tracked end to end
+- real-time shipment status visibility
+- negotiation between shipper and transporter
+- enough workflow depth that the product feels like a serious freight marketplace, not a static listing demo
+
+---
+
+## 7. Checklist
+
+### Phase 1: Escrow
+- [ ] Add escrow + milestone types
+- [ ] Add mock escrow data
+- [ ] Add booking payout status UI
+- [ ] Add shipper/transporter escrow views
+
+### Phase 2: Tracking
+- [ ] Add tracking event types and mock data
+- [ ] Add ETA/progress UI
+- [ ] Add status timeline in booking detail
+- [ ] Add transporter status update actions
+
+### Phase 3: Quotes
+- [ ] Add quote types and mock quotes
+- [ ] Add quote submission flow
+- [ ] Add quote dashboard views
+- [ ] Connect accepted quote to booking creation
+
+### Validation
+- [ ] `npm run lint`
+- [ ] `npm run typecheck`
+- [ ] `npm run build`

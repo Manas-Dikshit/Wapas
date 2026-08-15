@@ -1,7 +1,30 @@
 import type { Booking, Load, NotificationItem, Profile, Route, RouteStat, Transaction, Truck } from './types';
 
+function normalizeCityName(city: string): string {
+  return city.trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+export function routeContainsCity(route: Route | undefined, city: string): boolean {
+  if (!route) return false;
+  return route.stops.some((stop) => normalizeCityName(stop.city) === normalizeCityName(city));
+}
+
 export function routeBetween(origin: string, destination: string): Route | undefined {
-  return routes[`${origin}→${destination}`];
+  const directKey = `${origin.trim()}→${destination.trim()}`;
+  const reverseKey = `${destination.trim()}→${origin.trim()}`;
+
+  const directRoute = routes[directKey];
+  if (directRoute) return directRoute;
+
+  const reverseRoute = routes[reverseKey];
+  if (!reverseRoute) return undefined;
+
+  return {
+    ...reverseRoute,
+    originCity: reverseRoute.destinationCity,
+    destinationCity: reverseRoute.originCity,
+    stops: [...reverseRoute.stops].reverse().map((stop) => ({ ...stop }))
+  };
 }
 
 export const currentProfile: Profile = {
