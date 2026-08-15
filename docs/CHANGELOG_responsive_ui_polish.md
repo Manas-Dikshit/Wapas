@@ -230,3 +230,46 @@ unintentionally.
   direction changed; no `motion`/`animate-*` was removed. The added
   `flex-wrap`/`flex-col sm:flex-row` changes do not introduce layout shift or
   overflow.
+
+---
+
+## Micro-polish follow-up
+
+Quick gap-fill pass over the same page set (320/375/768/1024/1440px), focused
+on visual details the layout-fix pass didn't cover. **Visual-only** — no
+logic, data-fetching, routes, or `.sql` touched, and nothing from the main
+responsive stage was re-litigated. Same tokens/classes as before; no new
+colours or gradients.
+
+### What was touched
+
+| Item | File | Change | Rationale |
+| --- | --- | --- | --- |
+| **Icon sizing (1)** | `src/components/layout/app-shell.tsx` — mobile topbar | Bell icon `h-[17px] w-[17px]` → `h-[18px] w-[18px]`. | The mobile topbar rendered a 17px bell next to an 18px menu button in the same group. Standardized to 18px so both round buttons are optically identical. (Desktop topbar icons were already 18px.) |
+| **Hover states (2)** | `src/components/layout/app-shell.tsx` — mobile topbar | Both topbar buttons (bell + menu) gained `transition-colors hover:bg-navy-50`. | Desktop topbar buttons already had `hover:bg-navy-50`; the mobile equivalents were missing it, so the two states were inconsistent. |
+| **Hover states (2)** | `src/app/(app)/wallet/page.tsx`, `src/app/(app)/settings/page.tsx`, `src/app/register/page.tsx` | Interactive text buttons (`Add payment method`, `Enable 2FA`, `Use a different email`) gained `transition-colors hover:text-blue-600`. | These were clickable but had no hover affordance, unlike the app's `Link` text pattern. Added the same blue hover for consistency. |
+| **Headline leading (5)** | `src/components/landing/hero.tsx` | Hero `h1` `leading-[1.08]` → `leading-[1.14] sm:leading-[1.08]`. | At 40px on a 320–414px screen the hero stacks several lines; `1.08` felt cramped. Loosened to `1.14` on mobile only, restored to `1.08` at `sm:`+. |
+
+### Verified already-clean (no change needed)
+
+- **Empty states (3)** — loading skeletons reuse the `.skeleton` shimmer; "no
+  data" messages uniformly use `rounded-2xl border border-dashed border-navy-200
+  ... text-center text-sm text-navy-400`. Intentional and consistent after the
+  layout pass.
+- **Border/shadow consistency (4)** — `card-surface` (`rounded-xl3 border
+  border-navy-100/60 shadow-soft`) is used for every card; clickable cards add
+  `hover:shadow-floating`; inner list items use plain `border-navy-100` and
+  dashed `border-navy-200` for empties. Consistent semantic weights.
+- **Button/badge truncation (6)** — the bookings badge-row `flex-wrap` and the
+  dashboard header `flex-wrap` reads cleanly at 320px: each `Badge` (inline-flex,
+  no forced `nowrap`/`truncate`) wraps as a unit and each `buttonVariants` CTA
+  stays on its own line. No clipped labels.
+- **Icon sizing elsewhere (1)** — remaining button groups already use a single
+  icon size (e.g. dashboard header `h-4`, tracking driver `h-4`, app-shell nav
+  `h-[18px]`, mobile bottom-nav `h-5`).
+
+### Re-verification
+
+`npm run typecheck` and `npx next lint` both pass on the touched files. No
+interactive element in the touched set lost its focus/active feedback — the
+global `:focus-visible` rule and `buttonVariants` focus ring still apply.
