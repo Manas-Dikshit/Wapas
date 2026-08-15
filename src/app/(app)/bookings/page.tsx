@@ -42,7 +42,7 @@ export default function BookingsPage() {
         {filtered.map((b) => (
           <Link key={b.id} href={`/tracking/${b.id}`} className="card-surface flex items-center gap-4 p-4 transition-all hover:-translate-y-0.5 hover:shadow-floating sm:p-5">
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <p className="truncate text-sm font-bold text-navy-600">{b.loadTitle}</p>
                 <Badge variant={statusVariant[b.status]}>{b.status.replace('-', ' ')}</Badge>
                 {b.escrow && (

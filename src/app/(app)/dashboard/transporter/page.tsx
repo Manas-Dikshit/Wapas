@@ -511,7 +511,7 @@ export default function TransporterDashboardPage() {
           <h1 className="font-display text-2xl font-extrabold text-navy-600 sm:text-3xl">Good to see you, {firstName} 👋</h1>
           <p className="mt-1 text-sm text-navy-400">Here&apos;s what&apos;s moving across your fleet today.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link href="/marketplace" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}>
             <Search className="h-4 w-4" /> Find loads
           </Link>
