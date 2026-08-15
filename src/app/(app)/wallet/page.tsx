@@ -77,7 +77,7 @@ export default function WalletPage() {
           <PaymentMethodRow icon={<Smartphone className="h-4 w-4" />} label="UPI — arjun@okhdfc" isDefault />
           <PaymentMethodRow icon={<CreditCard className="h-4 w-4" />} label="HDFC Bank •••• 4821" />
         </div>
-        <button className="mt-4 flex items-center gap-2 text-sm font-bold text-blue-500">
+        <button className="mt-4 flex items-center gap-2 text-sm font-bold text-blue-500 transition-colors hover:text-blue-600">
           <Plus className="h-4 w-4" /> Add payment method
         </button>
       </div>
