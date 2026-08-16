@@ -21,10 +21,27 @@ export default function BookingPage({ params }: { params: { id: string } }) {
   const item = load ?? truck;
   if (!item) notFound();
 
+  const supabase = createClient();
+  const { profile } = useCurrentProfile();
+  const live = !!(supabase && profile);
+
   const [step, setStep] = useState(0);
   const reduce = useReducedMotion();
   const [method, setMethod] = useState<'upi' | 'card' | 'wallet'>('upi');
   const [processing, setProcessing] = useState(false);
+  const [walletBalance, setWalletBalance] = useState<number>(84250);
+
+  useEffect(() => {
+    if (!live || !supabase || !profile) return;
+    let active = true;
+    (async () => {
+      const bal = await supabase.rpc('wallet_balance', { p_profile_id: profile.id });
+      if (active && bal.data != null) setWalletBalance(Number(bal.data));
+    })();
+    return () => {
+      active = false;
+    };
+  }, [live, supabase, profile]);
 
   const title = load ? load.title : `${truck!.type} · ${truck!.capacityTons}T`;
   const route = load ? `${load.originCity} → ${load.destinationCity}` : `${truck!.currentCity} → ${truck!.destinationCity}`;
