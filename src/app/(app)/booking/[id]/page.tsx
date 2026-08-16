@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, notFound } from 'next/navigation';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Check, CreditCard, Loader2, Shield, Smartphone, Wallet as WalletIcon } from 'lucide-react';
+import { toast } from 'sonner';
 import { bookings, loads, trucks } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { cn, formatINR } from '@/lib/utils';
 import { TruckTypeIcon } from '@/components/marketplace/truck-type-icon';
+import { createClient } from '@/lib/supabase/client';
+import { useCurrentProfile } from '@/lib/hooks/use-current-profile';
 
 const steps = ['Review', 'Payment', 'Confirmed'];
 
