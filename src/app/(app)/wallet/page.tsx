@@ -1,21 +1,70 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowDownLeft, ArrowUpRight, CreditCard, Plus, Smartphone, Wallet as WalletIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import { bookings, transactions } from '@/lib/mock-data';
+import { bookings, transactions as mockTransactions } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatINR } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
+import { useCurrentProfile } from '@/lib/hooks/use-current-profile';
+import type { Transaction } from '@/lib/types';
 
 const statusVariant = { success: 'success', pending: 'warning', failed: 'danger' } as const;
 
+type Txn = Transaction;
+
 export default function WalletPage() {
-  const [balance] = useState(84250);
+  const supabase = createClient();
+  const { profile } = useCurrentProfile();
+  const live = !!(supabase && profile);
+
+  const [balance, setBalance] = useState(live ? 0 : 84250);
+  const [txns, setTxns] = useState<Txn[]>(live ? [] : mockTransactions);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!live || !supabase || !profile) return;
+    let active = true;
+
+    (async () => {
+      const bal = await supabase.rpc('wallet_balance', { p_profile_id: profile.id });
+      const { data: rows } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false });
+      if (!active) return;
+
+      setBalance(Number(bal.data ?? 0));
+      setTxns(
+        (rows ?? []).map((r) => ({
+          id: r.id,
+          type: r.type,
+          label: r.label,
+          amount: Number(r.amount),
+          date: new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+          method: r.method,
+          status: r.status
+        }))
+      );
+      setLoaded(true);
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [live, supabase, profile]);
+
   const escrowTotal = bookings.reduce(
     (sum, booking) => sum + Math.max((booking.escrow?.totalAmount ?? 0) - (booking.escrow?.releasedAmount ?? 0), 0),
     0
   );
+
+  const earnedMtd = txns.filter((t) => t.type === 'credit').reduce((s, t) => s + t.amount, 0);
+  const spentMtd = txns.filter((t) => t.type === 'debit').reduce((s, t) => s + t.amount, 0);
+  const inEscrow = txns.filter((t) => t.type === 'debit' && t.method === 'Escrow').reduce((s, t) => s + t.amount, 0);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 pb-6 animate-fade-up">
@@ -48,28 +97,30 @@ export default function WalletPage() {
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <SummaryTile icon={<ArrowUpRight className="h-4 w-4" />} label="Earned (MTD)" value={formatINR(29006)} tone="up" />
-        <SummaryTile icon={<ArrowDownLeft className="h-4 w-4" />} label="Spent (MTD)" value={formatINR(3845)} tone="down" />
-        <SummaryTile icon={<WalletIcon className="h-4 w-4" />} label="In escrow" value={formatINR(escrowTotal)} tone="neutral" />
+        <SummaryTile icon={<ArrowUpRight className="h-4 w-4" />} label="Earned (MTD)" value={formatINR(live ? earnedMtd : 29006)} tone="up" />
+        <SummaryTile icon={<ArrowDownLeft className="h-4 w-4" />} label="Spent (MTD)" value={formatINR(live ? spentMtd : 3845)} tone="down" />
+        <SummaryTile icon={<WalletIcon className="h-4 w-4" />} label="In escrow" value={formatINR(live ? inEscrow : escrowTotal)} tone="neutral" />
       </div>
 
-      <div className="card-surface p-5 sm:p-6">
-        <h3 className="mb-4 font-display text-base font-bold text-navy-600">Escrow payout status</h3>
-        <div className="space-y-3">
-          {bookings.filter((booking) => booking.escrow).map((booking) => (
-            <div key={booking.id} className="flex items-center justify-between rounded-2xl border border-navy-100 p-3.5">
-              <div>
-                <p className="text-sm font-bold text-navy-600">{booking.loadTitle}</p>
-                <p className="text-xs text-navy-400">{booking.route}</p>
+      {!live && (
+        <div className="card-surface p-5 sm:p-6">
+          <h3 className="mb-4 font-display text-base font-bold text-navy-600">Escrow payout status</h3>
+          <div className="space-y-3">
+            {bookings.filter((booking) => booking.escrow).map((booking) => (
+              <div key={booking.id} className="flex items-center justify-between rounded-2xl border border-navy-100 p-3.5">
+                <div>
+                  <p className="text-sm font-bold text-navy-600">{booking.loadTitle}</p>
+                  <p className="text-xs text-navy-400">{booking.route}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-navy-600">{formatINR((booking.escrow?.totalAmount ?? 0) - (booking.escrow?.releasedAmount ?? 0))}</p>
+                  <p className="text-[11px] font-semibold text-blue-500">{booking.escrow?.status === 'released' ? 'Released' : 'Held in escrow'}</p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-bold text-navy-600">{formatINR((booking.escrow?.totalAmount ?? 0) - (booking.escrow?.releasedAmount ?? 0))}</p>
-                <p className="text-[11px] font-semibold text-blue-500">{booking.escrow?.status === 'released' ? 'Released' : 'Held in escrow'}</p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="card-surface p-5 sm:p-6">
         <h3 className="mb-4 font-display text-base font-bold text-navy-600">Payment methods</h3>
@@ -87,23 +138,27 @@ export default function WalletPage() {
           <h3 className="font-display text-base font-bold text-navy-600">Recent transactions</h3>
         </div>
         <div className="divide-y divide-navy-100">
-          {transactions.map((t) => (
-            <div key={t.id} className="flex items-center gap-4 px-5 py-4 sm:px-6">
-              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${t.type === 'credit' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
-                {t.type === 'credit' ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
+          {loaded && txns.length === 0 ? (
+            <p className="px-5 py-4 text-sm text-navy-400 sm:px-6">No transactions yet.</p>
+          ) : (
+            txns.map((t) => (
+              <div key={t.id} className="flex items-center gap-4 px-5 py-4 sm:px-6">
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${t.type === 'credit' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
+                  {t.type === 'credit' ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-navy-600">{t.label}</p>
+                  <p className="text-xs text-navy-400">{t.date} · {t.method}</p>
+                </div>
+                <div className="text-right">
+                  <p className={`text-sm font-bold ${t.type === 'credit' ? 'text-emerald-600' : 'text-navy-600'}`}>
+                    {t.type === 'credit' ? '+' : '-'}{formatINR(t.amount)}
+                  </p>
+                  <Badge variant={statusVariant[t.status]} className="mt-1">{t.status}</Badge>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-navy-600">{t.label}</p>
-                <p className="text-xs text-navy-400">{t.date} · {t.method}</p>
-              </div>
-              <div className="text-right">
-                <p className={`text-sm font-bold ${t.type === 'credit' ? 'text-emerald-600' : 'text-navy-600'}`}>
-                  {t.type === 'credit' ? '+' : '-'}{formatINR(t.amount)}
-                </p>
-                <Badge variant={statusVariant[t.status]} className="mt-1">{t.status}</Badge>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
