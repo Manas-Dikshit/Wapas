@@ -30,6 +30,17 @@ const baseSteps: Omit<TimelineStep, 'done' | 'active'>[] = [
   { label: 'Delivered', time: 'Expected 6:40 PM' }
 ];
 
+function locationForPct(pct: number, destinationCity: string) {
+  if (pct >= 100) return destinationCity;
+  if (pct >= 75) return 'Pune outskirts';
+  if (pct >= 45) return 'Bhiwandi';
+  if (pct >= 20) return 'Nashik';
+  return 'Mumbai';
+}
+
+type LiveBooking = { id: string; status: string; progress_pct: number; eta: string | null };
+type LiveEvent = { id: string; status_label: string; note: string | null; created_at: string };
+
 export default function TrackingPage({ params }: { params: { id: string } }) {
   const booking = bookings.find((b) => b.id === params.id) ?? bookings[0];
   const initialTracker = useMemo(
