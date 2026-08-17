@@ -11,6 +11,7 @@ import { Avatar, Progress, Skeleton } from '@/components/ui/primitives';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatINR } from '@/lib/utils';
+import type { TrackingEvent } from '@/lib/types';
 
 // Leaflet touches `window`/`document` as soon as it's imported, so the real
 // map must never run on the server — load it client-only.
