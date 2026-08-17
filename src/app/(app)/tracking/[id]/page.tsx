@@ -128,23 +128,24 @@ export default function TrackingPage({ params }: { params: { id: string } }) {
         (payload) =>
           setTracker((prev) => ({
             ...prev,
-            events: [...prev.events, toTrackingEvent(payload.new as LiveEvent)],
+            events: [...prev.events, toTrackingEvent(payload.new as LiveEvent, params.id)],
             updatedAt: 'Just now'
           }))
       )
       .subscribe();
 
-    // Supabase auto-reconnects; this focus handler just re-syncs the booking
-    // after the tab was backgrounded. The channel is never re-created here.
-    window.addEventListener('focus', () =>
+    const onFocus = () =>
       client.from('bookings').select('id, status, progress_pct, eta').eq('id', params.id).maybeSingle().then(({ data }) => {
         if (active && data) applyBooking(data as LiveBooking);
-      })
-    );
+      });
+
+    // Supabase auto-reconnects; this focus handler just re-syncs the booking
+    // after the tab was backgrounded. The channel is never re-created here.
+    window.addEventListener('focus', onFocus);
 
     return () => {
       active = false;
-      window.removeEventListener('focus', () => {});
+      window.removeEventListener('focus', onFocus);
       client.removeChannel(channel);
     };
   }, [params.id, destinationCity]);
