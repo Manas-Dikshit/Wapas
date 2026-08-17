@@ -22,8 +22,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/primitives';
-import { notifications } from '@/lib/mock-data';
 import { useCurrentProfile } from '@/lib/hooks/use-current-profile';
+import { useLiveNotifications } from '@/lib/hooks/use-live-notifications';
 import { buttonVariants } from '@/components/ui/button-variants';
 
 const navItems = [
@@ -48,7 +48,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const reduce = useReducedMotion();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const { unreadCount } = useLiveNotifications();
   const { profile } = useCurrentProfile();
   const displayName = profile?.fullName ?? 'Guest';
   const displayCompany = profile?.companyName ?? 'Not signed in';
