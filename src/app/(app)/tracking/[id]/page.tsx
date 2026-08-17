@@ -61,6 +61,79 @@ export default function TrackingPage({ params }: { params: { id: string } }) {
 
   const [originCity, destinationCity] = booking.route.split(' → ');
 
+  // Live sync: when Supabase is configured, drive the tracker off Realtime
+  // instead of the local mock `advanceStatus` button. Demo mode (no Supabase)
+  // returns early and keeps the existing mock behaviour unchanged.
+  useEffect(() => {
+    const supabase = createClient();
+    if (!supabase) return;
+    const client = supabase;
+    let active = true;
+
+    const applyBooking = (row: LiveBooking) =>
+      setTracker((prev) => ({
+        ...prev,
+        status: row.status,
+        progressPct: row.progress_pct,
+        eta: row.eta ?? prev.eta,
+        currentLocation: locationForPct(row.progress_pct, destinationCity),
+        updatedAt: 'Just now'
+      }));
+
+    client
+      .from('bookings')
+      .select('id, status, progress_pct, eta')
+      .eq('id', params.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (active && !error && data) applyBooking(data as LiveBooking);
+      });
+
+    client
+      .from('tracking_events')
+      .select('id, status_label, note, created_at')
+      .eq('booking_id', params.id)
+      .order('created_at', { ascending: true })
+      .then(({ data, error }) => {
+        if (active && !error && data) {
+          setTracker((prev) => ({ ...prev, events: (data as LiveEvent[]).map(toTrackingEvent) }));
+        }
+      });
+
+    const channel = client
+      .channel(`realtime:booking:${params.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'bookings', filter: `id=eq.${params.id}` },
+        (payload) => applyBooking(payload.new as LiveBooking)
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'tracking_events', filter: `booking_id=eq.${params.id}` },
+        (payload) =>
+          setTracker((prev) => ({
+            ...prev,
+            events: [...prev.events, toTrackingEvent(payload.new as LiveEvent)],
+            updatedAt: 'Just now'
+          }))
+      )
+      .subscribe();
+
+    // Supabase auto-reconnects; this focus handler just re-syncs the booking
+    // after the tab was backgrounded. The channel is never re-created here.
+    window.addEventListener('focus', () =>
+      client.from('bookings').select('id, status, progress_pct, eta').eq('id', params.id).maybeSingle().then(({ data }) => {
+        if (active && data) applyBooking(data as LiveBooking);
+      })
+    );
+
+    return () => {
+      active = false;
+      window.removeEventListener('focus', () => {});
+      client.removeChannel(channel);
+    };
+  }, [params.id, destinationCity]);
+
   const doneCount =
     tracker.events.length > 0 ? Math.min(5, tracker.events.length) : booking.status === 'delivered' ? 5 : booking.status === 'in-transit' ? Math.ceil((tracker.progressPct / 100) * 4) : 1;
   const steps: TimelineStep[] = baseSteps.map((s, i) => ({ ...s, done: i < doneCount, active: i === doneCount }));
