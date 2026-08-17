@@ -41,6 +41,20 @@ function locationForPct(pct: number, destinationCity: string) {
 type LiveBooking = { id: string; status: string; progress_pct: number; eta: string | null };
 type LiveEvent = { id: string; status_label: string; note: string | null; created_at: string };
 
+function toTrackingEvent(e: LiveEvent, bookingId: string) {
+  const label = e.status_label.toLowerCase();
+  const status: TrackingEvent['status'] =
+    label === 'delivered' ? 'delivered' : label.includes('transit') ? 'in_transit' : 'checkpoint';
+  return {
+    id: e.id,
+    bookingId,
+    timestamp: new Date(e.created_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+    status,
+    location: e.note ?? e.status_label,
+    note: e.note ?? undefined
+  };
+}
+
 export default function TrackingPage({ params }: { params: { id: string } }) {
   const booking = bookings.find((b) => b.id === params.id) ?? bookings[0];
   const initialTracker = useMemo(
