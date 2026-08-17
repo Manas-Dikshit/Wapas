@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, notFound } from 'next/navigation';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Check, CreditCard, Loader2, Shield, Smartphone, Wallet as WalletIcon } from 'lucide-react';
+import { toast } from 'sonner';
 import { bookings, loads, trucks } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { cn, formatINR } from '@/lib/utils';
 import { TruckTypeIcon } from '@/components/marketplace/truck-type-icon';
+import { createClient } from '@/lib/supabase/client';
+import { useCurrentProfile } from '@/lib/hooks/use-current-profile';
 
 const steps = ['Review', 'Payment', 'Confirmed'];
 
@@ -18,10 +21,27 @@ export default function BookingPage({ params }: { params: { id: string } }) {
   const item = load ?? truck;
   if (!item) notFound();
 
+  const supabase = createClient();
+  const { profile } = useCurrentProfile();
+  const live = !!(supabase && profile);
+
   const [step, setStep] = useState(0);
   const reduce = useReducedMotion();
   const [method, setMethod] = useState<'upi' | 'card' | 'wallet'>('upi');
   const [processing, setProcessing] = useState(false);
+  const [walletBalance, setWalletBalance] = useState<number>(84250);
+
+  useEffect(() => {
+    if (!live || !supabase || !profile) return;
+    let active = true;
+    (async () => {
+      const bal = await supabase.rpc('wallet_balance', { p_profile_id: profile.id });
+      if (active && bal.data != null) setWalletBalance(Number(bal.data));
+    })();
+    return () => {
+      active = false;
+    };
+  }, [live, supabase, profile]);
 
   const title = load ? load.title : `${truck!.type} · ${truck!.capacityTons}T`;
   const route = load ? `${load.originCity} → ${load.destinationCity}` : `${truck!.currentCity} → ${truck!.destinationCity}`;
@@ -39,12 +59,103 @@ export default function BookingPage({ params }: { params: { id: string } }) {
     ]
   };
 
-  function confirmPayment() {
+  async function confirmPayment() {
+    if (!live || !supabase || !profile) {
+      setProcessing(true);
+      setTimeout(() => {
+        setProcessing(false);
+        setStep(2);
+      }, 1400);
+      return;
+    }
+
     setProcessing(true);
-    setTimeout(() => {
-      setProcessing(false);
+    try {
+      const { data: loadRow } = await supabase.from('loads').select('*').eq('id', params.id).maybeSingle();
+      const { data: truckRow } = loadRow
+        ? { data: null }
+        : await supabase.from('trucks').select('*').eq('id', params.id).maybeSingle();
+
+      let insert: { load_id: string; truck_id: string; shipper_id: string; transporter_id: string; amount: number };
+
+      if (loadRow) {
+        // Booking a load — the signed-in user is the transporter.
+        if (profile.role !== 'transporter' && profile.role !== 'admin') {
+          toast.error('Only transporters can book a load.');
+          return;
+        }
+        const { data: fleet } = await supabase
+          .from('trucks')
+          .select('*')
+          .eq('transporter_id', profile.id)
+          .eq('status', 'available');
+        const truck = (fleet ?? []).find((t) => t.type === loadRow.truck_type_needed) ?? (fleet ?? [])[0];
+        if (!truck) {
+          toast.error('No available truck in your fleet', { description: 'Add an available truck that can carry this load before booking.' });
+          return;
+        }
+        insert = {
+          load_id: loadRow.id,
+          truck_id: truck.id,
+          shipper_id: loadRow.shipper_id,
+          transporter_id: profile.id,
+          amount: Number(loadRow.budget)
+        };
+      } else if (truckRow) {
+        // Booking a truck — the signed-in user is the shipper.
+        if (profile.role !== 'shipper' && profile.role !== 'admin') {
+          toast.error('Only shippers can book a truck.');
+          return;
+        }
+        const { data: openLoad } = await supabase
+          .from('loads')
+          .select('*')
+          .eq('shipper_id', profile.id)
+          .eq('status', 'open')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (!openLoad) {
+          toast.error('No open load to attach', { description: 'Post a load first, then book a truck against it.' });
+          return;
+        }
+        insert = {
+          load_id: openLoad.id,
+          truck_id: truckRow.id,
+          shipper_id: profile.id,
+          transporter_id: truckRow.transporter_id,
+          amount: Number(truckRow.price_per_ton) * Number(truckRow.capacity_tons)
+        };
+      } else {
+        toast.error('Item not found', { description: 'This load or truck no longer exists on the marketplace.' });
+        return;
+      }
+
+      const bal = await supabase.rpc('wallet_balance', { p_profile_id: insert.shipper_id });
+      if (Number(bal.data ?? 0) < insert.amount) {
+        toast.error('Insufficient wallet balance', { description: 'Add funds to your wallet before booking.' });
+        return;
+      }
+
+      const { error } = await supabase.from('bookings').insert(insert);
+      if (error) throw error;
       setStep(2);
-    }, 1400);
+    } catch (err) {
+      const msg = ((err as { message?: string })?.message ?? '').toLowerCase();
+      if (msg.includes('insufficient_wallet_balance')) {
+        toast.error('Insufficient wallet balance', { description: 'Add funds to your wallet before booking.' });
+      } else if (msg.includes('already_booked') || msg.includes('truck_not_available')) {
+        toast.error('This load is already booked', { description: 'It has been taken by another transporter.' });
+      } else if (msg.includes('duplicate') || msg.includes('unique')) {
+        toast.error('Already booked', { description: 'This load can only be booked once.' });
+      } else if (msg.includes('failed to fetch') || msg.includes('network')) {
+        toast.error('Could not reach the server', { description: 'Check your connection and try again.' });
+      } else {
+        toast.error("Couldn't complete booking", { description: (err as { message?: string })?.message ?? 'Please try again.' });
+      }
+    } finally {
+      setProcessing(false);
+    }
   }
 
   return (
@@ -152,7 +263,7 @@ export default function BookingPage({ params }: { params: { id: string } }) {
             {method === 'wallet' && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-navy-500">Wapas Wallet balance</span>
-                <span className="font-display text-lg font-extrabold text-navy-600">{formatINR(84250)}</span>
+                <span className="font-display text-lg font-extrabold text-navy-600">{formatINR(walletBalance)}</span>
               </div>
             )}
           </div>
