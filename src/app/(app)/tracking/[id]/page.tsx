@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Phone, MessageCircle, Copy, PackageCheck, Truck as TruckIcon, MapPinned } from 'lucide-react';
 import { toast } from 'sonner';
 import { bookings, shipmentTrackers } from '@/lib/mock-data';
+import { createClient } from '@/lib/supabase/client';
 import { Timeline, type TimelineStep } from '@/components/tracking/timeline';
 import { Avatar, Progress, Skeleton } from '@/components/ui/primitives';
 import { Badge } from '@/components/ui/badge';
