@@ -111,7 +111,7 @@ export default function TrackingPage({ params }: { params: { id: string } }) {
       .order('created_at', { ascending: true })
       .then(({ data, error }) => {
         if (active && !error && data) {
-          setTracker((prev) => ({ ...prev, events: (data as LiveEvent[]).map(toTrackingEvent) }));
+          setTracker((prev) => ({ ...prev, events: (data as LiveEvent[]).map((e) => toTrackingEvent(e, params.id)) }));
         }
       });
 
