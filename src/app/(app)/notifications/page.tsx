@@ -14,7 +14,7 @@ const colorFor = {
 } as const;
 
 export default function NotificationsPage() {
-  const [items, setItems] = useState(initialNotifications);
+  const { items, unreadCount, markAllRead, markRead } = useLiveNotifications();
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 pb-6 animate-fade-up">
