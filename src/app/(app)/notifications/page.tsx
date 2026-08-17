@@ -21,11 +21,11 @@ export default function NotificationsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl font-extrabold text-navy-600 sm:text-3xl">Notifications</h1>
-          <p className="mt-1 text-sm text-navy-400">{items.filter((n) => !n.read).length} unread</p>
+          <p className="mt-1 text-sm text-navy-400">{unreadCount} unread</p>
         </div>
         <button
           className="text-xs font-bold text-blue-500"
-          onClick={() => setItems((it) => it.map((n) => ({ ...n, read: true })))}
+          onClick={markAllRead}
         >
           Mark all read
         </button>
@@ -37,7 +37,7 @@ export default function NotificationsPage() {
           return (
             <StaggerItem key={n.id}>
               <button
-                onClick={() => setItems((it) => it.map((x) => (x.id === n.id ? { ...x, read: true } : x)))}
+                onClick={() => markRead(n.id)}
                 className={cn('flex w-full items-start gap-3.5 p-4 text-left transition-colors hover:bg-navy-50/50 sm:p-5', !n.read && 'bg-blue-50/30')}
               >
                 <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-full', colorFor[n.type])}>
