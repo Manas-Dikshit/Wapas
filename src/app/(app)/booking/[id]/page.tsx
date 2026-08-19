@@ -261,9 +261,16 @@ export default function BookingPage({ params }: { params: { id: string } }) {
               </div>
             )}
             {method === 'wallet' && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-navy-500">Wapas Wallet balance</span>
-                <span className="font-display text-lg font-extrabold text-navy-600">{formatINR(walletBalance)}</span>
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-navy-500">Wapas Wallet balance</span>
+                  <span className="font-display text-lg font-extrabold text-navy-600">{formatINR(walletBalance)}</span>
+                </div>
+                {walletBalance < amount && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-medium text-amber-700">
+                    Insufficient wallet balance for this booking ({formatINR(amount)} required). Please top up your wallet before proceeding.
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -273,7 +280,7 @@ export default function BookingPage({ params }: { params: { id: string } }) {
             <span className="font-display text-2xl font-extrabold text-navy-600">{formatINR(amount)}</span>
           </div>
 
-          <Button className="mt-6 w-full" size="lg" onClick={confirmPayment} disabled={processing}>
+          <Button className="mt-6 w-full" size="lg" onClick={confirmPayment} disabled={processing || (method === 'wallet' && walletBalance < amount)}>
             {processing && <Loader2 className="h-4 w-4 animate-spin" />}
             {processing ? 'Processing payment…' : `Pay ${formatINR(amount)}`}
           </Button>
@@ -303,7 +310,7 @@ export default function BookingPage({ params }: { params: { id: string } }) {
             <Row label="Escrow held" value={formatINR(escrow.totalAmount - escrow.releasedAmount)} />
             <Row label="Route" value={route} />
           </div>
-          <div className="mt-6 flex w-full gap-3">
+          <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row">
             <Button variant="outline" className="flex-1" onClick={() => router.push('/bookings')}>
               View all trips
             </Button>
@@ -333,7 +340,7 @@ function PayOption({ icon, label, active, onClick }: { icon: React.ReactNode; la
     <button
       onClick={onClick}
       className={cn(
-        'flex flex-col items-center gap-2 rounded-2xl border p-4 transition-colors',
+        'flex min-h-[44px] flex-col items-center justify-center gap-2 rounded-2xl border p-4 transition-colors',
         active ? 'border-blue-400 bg-blue-50 text-blue-600' : 'border-navy-100 text-navy-400 hover:border-navy-200'
       )}
     >

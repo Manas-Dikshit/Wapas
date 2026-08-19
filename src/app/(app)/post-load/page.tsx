@@ -143,7 +143,7 @@ function PostLoadForm() {
           <Input required placeholder="e.g. Textile Rolls — 400 Bales" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
         </Field>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Category">
             <select className="h-12 w-full rounded-2xl border border-navy-100 bg-white px-4 text-sm text-navy-700 focus:border-blue-400" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
               {categories.map((c) => <option key={c}>{c}</option>)}
@@ -154,7 +154,7 @@ function PostLoadForm() {
           </Field>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Origin city">
             <select className="h-12 w-full rounded-2xl border border-navy-100 bg-white px-4 text-sm text-navy-700 focus:border-blue-400" value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value })}>
               {cities.map((c) => <option key={c}>{c}</option>)}
@@ -181,7 +181,7 @@ function PostLoadForm() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Pickup date">
             <Input required type="date" value={form.pickupDate} onChange={(e) => setForm({ ...form, pickupDate: e.target.value })} />
           </Field>
@@ -191,13 +191,13 @@ function PostLoadForm() {
         </div>
 
         <Field label="Truck type needed">
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
             {truckTypes.map((t) => (
               <button
                 type="button"
                 key={t}
                 onClick={() => setForm({ ...form, truckType: t })}
-                className={`rounded-xl border px-2 py-2.5 text-[11px] font-bold transition-colors ${
+                className={`flex min-h-[44px] items-center justify-center rounded-xl border px-2 py-2.5 text-xs font-bold transition-colors ${
                   form.truckType === t ? 'border-blue-400 bg-blue-50 text-blue-600' : 'border-navy-100 text-navy-400 hover:border-navy-200'
                 }`}
               >

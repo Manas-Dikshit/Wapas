@@ -42,7 +42,7 @@ export default function BookingsPage() {
       <Stagger className="space-y-3" stagger={0.05}>
         {filtered.map((b) => (
           <StaggerItem key={b.id}>
-            <Link href={`/tracking/${b.id}`} className="card-surface flex items-center gap-4 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-floating sm:p-5">
+            <Link href={`/tracking/${b.id}`} className="card-surface flex items-center gap-3 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-floating sm:gap-4 sm:p-5">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="truncate text-sm font-bold text-navy-600">{b.loadTitle}</p>
@@ -51,7 +51,7 @@ export default function BookingsPage() {
                   <Badge variant="aqua">Escrow {formatINR((b.escrow.totalAmount - b.escrow.releasedAmount))}</Badge>
                 )}
               </div>
-              <p className="mt-1 text-xs text-navy-400">{b.route} · {b.vehicleNumber} · {b.driverName}</p>
+              <p className="mt-1 truncate text-xs text-navy-400">{b.route} · {b.vehicleNumber} · {b.driverName}</p>
               {b.status === 'in-transit' && (
                 <div className="mt-2.5 flex items-center gap-3">
                   <Progress value={b.progressPct} className="max-w-[220px]" />
@@ -59,7 +59,7 @@ export default function BookingsPage() {
                 </div>
               )}
             </div>
-            <div className="text-right">
+            <div className="shrink-0 text-right">
               <p className="text-sm font-bold text-navy-600">{formatINR(b.amount)}</p>
               <p className="text-xs text-navy-400">{b.eta}</p>
             </div>

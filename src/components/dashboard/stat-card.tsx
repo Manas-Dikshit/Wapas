@@ -17,14 +17,14 @@ export function StatCard({
 }) {
   const numeric = /^\d+(\.\d+)?$/.test(value.replace(/[,₹%L]+/g, ''));
   return (
-    <div className="card-surface p-5 transition-shadow duration-300 hover:shadow-floating">
-      <p className="text-xs font-semibold text-navy-400">{label}</p>
-      <p className="mt-2 font-display text-xl font-extrabold text-navy-600 sm:text-2xl">
+    <div className="card-surface min-w-0 p-3.5 transition-shadow duration-300 hover:shadow-floating sm:p-5">
+      <p className="truncate text-xs font-semibold text-navy-400">{label}</p>
+      <p className="mt-1.5 truncate font-display text-lg font-extrabold text-navy-600 sm:mt-2 sm:text-2xl">
         {numeric ? <CountUp value={parseFloat(value.replace(/[,₹%L]+/g, ''))} prefix={value.includes('₹') ? '₹' : ''} suffix={value.endsWith('%') ? '%' : ''} /> : value}
       </p>
-      <div className={cn('mt-2 inline-flex items-center gap-1 text-xs font-bold', trend === 'up' ? 'text-emerald-600' : 'text-red-500')}>
-        {trend === 'up' ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
-        {delta}
+      <div className={cn('mt-1.5 inline-flex max-w-full items-center gap-1 text-xs font-bold sm:mt-2', trend === 'up' ? 'text-emerald-600' : 'text-red-500')}>
+        {trend === 'up' ? <ArrowUpRight className="h-3.5 w-3.5 shrink-0" /> : <ArrowDownRight className="h-3.5 w-3.5 shrink-0" />}
+        <span className="truncate">{delta}</span>
       </div>
     </div>
   );

@@ -457,20 +457,20 @@ export default function ShipperDashboardPage() {
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => startEdit(l)}
-                              className="flex h-8 w-8 items-center justify-center rounded-full bg-navy-50 text-navy-500 hover:bg-navy-100"
+                              className="flex h-11 w-11 items-center justify-center rounded-full bg-navy-50 text-navy-500 hover:bg-navy-100"
                               title="Edit load"
                               aria-label="Edit load"
                             >
-                              <Pencil className="h-3.5 w-3.5" />
+                              <Pencil className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => cancelLoad(l)}
-                              className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-100"
+                              className="flex h-11 w-11 items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-100"
                               title="Cancel load"
                               aria-label="Cancel load"
                               disabled={mutationLoading}
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
                         </div>
@@ -500,22 +500,22 @@ export default function ShipperDashboardPage() {
             </p>
           ) : (
             savedTransporters.slice(0, 3).map((t) => (
-              <div key={t.id} className="flex items-center gap-3 rounded-2xl border border-navy-100 p-3.5">
-                <Avatar name={t.full_name} className="h-10 w-10 text-xs" />
+              <div key={t.id} className="flex min-w-0 items-center gap-2.5 rounded-2xl border border-navy-100 p-3.5 sm:gap-3">
+                <Avatar name={t.full_name} className="h-10 w-10 shrink-0 text-xs" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold text-navy-600">{t.company_name || t.full_name}</p>
-                  <p className="text-xs text-navy-400">{t.city || 'Transporter'}</p>
+                  <p className="truncate text-xs text-navy-400">{t.city || 'Transporter'}</p>
                 </div>
-                <span className="flex items-center gap-1 text-xs font-bold text-navy-600">
+                <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-navy-600">
                   <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" /> {Number(t.rating).toFixed(1)}
                 </span>
                 <button
                   onClick={() => unsaveTransporter(t.id)}
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-navy-300 hover:bg-navy-50 hover:text-rose-400"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-navy-300 hover:bg-navy-50 hover:text-rose-400"
                   title="Remove from saved"
                   aria-label="Remove from saved"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             ))

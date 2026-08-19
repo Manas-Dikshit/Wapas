@@ -19,7 +19,7 @@ const LiveTrackingMap = dynamic(
   () => import('@/components/tracking/real-map').then((m) => m.LiveTrackingMap),
   {
     ssr: false,
-    loading: () => <Skeleton className="h-[260px] w-full rounded-xl3 sm:h-[340px]" />
+    loading: () => <Skeleton className="h-[200px] w-full rounded-xl3 sm:h-[300px]" />
   }
 );
 
@@ -241,10 +241,10 @@ export default function TrackingPage({ params }: { params: { id: string } }) {
               <p className="text-xs text-navy-400">{booking.vehicleNumber}</p>
             </div>
             <div className="flex gap-2">
-              <button className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100">
+              <button className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100" title="Call driver" aria-label="Call driver">
                 <Phone className="h-4 w-4" />
               </button>
-              <button className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100">
+              <button className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100" title="Message driver" aria-label="Message driver">
                 <MessageCircle className="h-4 w-4" />
               </button>
             </div>

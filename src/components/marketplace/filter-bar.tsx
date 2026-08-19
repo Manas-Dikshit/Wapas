@@ -105,11 +105,11 @@ export function FilterBar({
             className="h-11 w-full rounded-2xl border border-navy-100 bg-canvas pl-11 pr-4 text-sm text-navy-600 placeholder:text-navy-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:overflow-x-auto">
           <select
             value={city}
             onChange={(e) => onCityChange(e.target.value)}
-            className="h-11 shrink-0 rounded-2xl border border-navy-100 bg-canvas px-3 text-sm font-semibold text-navy-500 focus:border-blue-400"
+            className="h-11 w-full rounded-2xl border border-navy-100 bg-canvas px-3 text-sm font-semibold text-navy-500 focus:border-blue-400 sm:w-auto sm:shrink-0"
           >
             <option value="">Any city</option>
             {cities.map((c) => (
@@ -119,7 +119,7 @@ export function FilterBar({
           <select
             value={type}
             onChange={(e) => onTypeChange(e.target.value)}
-            className="h-11 shrink-0 rounded-2xl border border-navy-100 bg-canvas px-3 text-sm font-semibold text-navy-500 focus:border-blue-400"
+            className="h-11 w-full rounded-2xl border border-navy-100 bg-canvas px-3 text-sm font-semibold text-navy-500 focus:border-blue-400 sm:w-auto sm:shrink-0"
           >
             <option value="">Any truck type</option>
             {TRUCK_TYPES.map((t) => (
@@ -128,7 +128,7 @@ export function FilterBar({
           </select>
           <button
             onClick={() => setExpanded((s) => !s)}
-            className={`flex h-11 shrink-0 items-center gap-1.5 rounded-2xl border px-4 text-sm font-semibold transition-colors ${
+            className={`col-span-2 flex h-11 items-center justify-center gap-1.5 rounded-2xl border px-4 text-sm font-semibold transition-colors sm:col-span-1 sm:shrink-0 ${
               expanded || active ? 'border-blue-300 bg-blue-50 text-blue-600' : 'border-navy-100 bg-canvas text-navy-500 hover:bg-navy-50'
             }`}
           >
