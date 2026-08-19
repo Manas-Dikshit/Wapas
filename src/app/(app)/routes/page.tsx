@@ -1,5 +1,8 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, MapPin, Truck } from 'lucide-react';
+import { ArrowRight, MapPin, Sparkles, Truck } from 'lucide-react';
 import { routes } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
 import { RouteHighway } from '@/components/marketplace/route-strip';
@@ -7,22 +10,73 @@ import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 
 export default function RoutesPage() {
+  const [regionFilter, setRegionFilter] = useState<'all' | 'odisha' | 'national'>('all');
   const allRoutes = Object.values(routes);
+
+  const displayedRoutes = allRoutes.filter((r) => {
+    const isOdisha =
+      r.stops.some((s) => s.state === 'Odisha') ||
+      r.originCity === 'Bhubaneswar' ||
+      r.destinationCity === 'Bhubaneswar' ||
+      r.originCity === 'Rourkela' ||
+      r.destinationCity === 'Paradeep';
+    if (regionFilter === 'odisha') return isOdisha;
+    if (regionFilter === 'national') return !isOdisha;
+    return true;
+  });
 
   return (
     <div className="space-y-6 pb-6 animate-fade-up">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <h1 className="font-display text-2xl font-extrabold text-navy-600 sm:text-3xl">Route Explorer</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="font-display text-2xl font-extrabold text-navy-600 sm:text-3xl">Route Explorer</h1>
+            <Badge variant="aqua" className="hidden sm:inline-flex">Corridor Network</Badge>
+          </div>
           <p className="mt-1 text-sm text-navy-400">
             Browse active truck corridors and their intermediate stops. Request a pickup at any city along the route —
             even if it isn&apos;t the origin or destination.
           </p>
         </div>
+
+        <div className="flex shrink-0 items-center gap-1.5 rounded-2xl border border-navy-100 bg-white p-1 shadow-soft">
+          <button
+            type="button"
+            onClick={() => setRegionFilter('all')}
+            className={cn(
+              'rounded-xl px-3 py-1.5 text-xs font-semibold transition-all',
+              regionFilter === 'all' ? 'bg-navy-600 text-white shadow-sm' : 'text-navy-400 hover:text-navy-600'
+            )}
+          >
+            All Corridors ({allRoutes.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setRegionFilter('odisha')}
+            className={cn(
+              'flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all',
+              regionFilter === 'odisha'
+                ? 'bg-blue-500 text-white shadow-sm'
+                : 'text-blue-600 hover:bg-blue-50'
+            )}
+          >
+            <Sparkles className="h-3 w-3" /> Odisha Region (Demo)
+          </button>
+          <button
+            type="button"
+            onClick={() => setRegionFilter('national')}
+            className={cn(
+              'rounded-xl px-3 py-1.5 text-xs font-semibold transition-all',
+              regionFilter === 'national' ? 'bg-navy-600 text-white shadow-sm' : 'text-navy-400 hover:text-navy-600'
+            )}
+          >
+            Inter-State Trunk
+          </button>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        {allRoutes.map((route) => {
+        {displayedRoutes.map((route) => {
           const midStops = route.stops.filter((s) => !s.isHighwayJunction);
           return (
             <div key={`${route.originCity}→${route.destinationCity}`} className="card-surface flex flex-col p-5">

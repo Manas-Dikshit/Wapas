@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Phone, MessageCircle, Copy, PackageCheck, Truck as TruckIcon, MapPinned } from 'lucide-react';
 import { toast } from 'sonner';
-import { bookings, shipmentTrackers } from '@/lib/mock-data';
+import { bookings, routeBetween, shipmentTrackers } from '@/lib/mock-data';
 import { Timeline, type TimelineStep } from '@/components/tracking/timeline';
 import { Avatar, Progress, Skeleton } from '@/components/ui/primitives';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +48,7 @@ export default function TrackingPage({ params }: { params: { id: string } }) {
   const [tracker, setTracker] = useState(initialTracker);
 
   const [originCity, destinationCity] = booking.route.split(' → ');
+  const activeRoute = useMemo(() => routeBetween(originCity, destinationCity), [originCity, destinationCity]);
 
   const doneCount =
     tracker.events.length > 0 ? Math.min(5, tracker.events.length) : booking.status === 'delivered' ? 5 : booking.status === 'in-transit' ? Math.ceil((tracker.progressPct / 100) * 4) : 1;
@@ -60,9 +61,21 @@ export default function TrackingPage({ params }: { params: { id: string } }) {
     }
 
     const nextPct = Math.min(100, tracker.progressPct + 18);
-    const nextLocation =
-      nextPct >= 100 ? destinationCity : nextPct >= 75 ? 'Pune outskirts' : nextPct >= 45 ? 'Bhiwandi' : nextPct >= 20 ? 'Nashik' : 'Mumbai';
-    const nextEta = nextPct >= 100 ? 'Delivered' : nextPct >= 75 ? 'Today, 6:40 PM' : nextPct >= 45 ? 'Today, 6:10 PM' : nextPct >= 20 ? 'Today, 5:35 PM' : 'Today, 5:00 PM';
+    let nextLocation = destinationCity;
+    if (nextPct >= 100) {
+      nextLocation = destinationCity;
+    } else if (activeRoute && activeRoute.stops.length > 0) {
+      const stopIdx = Math.min(
+        activeRoute.stops.length - 1,
+        Math.floor((nextPct / 100) * activeRoute.stops.length)
+      );
+      nextLocation = activeRoute.stops[stopIdx]?.city || destinationCity;
+      if (nextPct >= 80) nextLocation = `${nextLocation} (Near ${destinationCity})`;
+    } else {
+      nextLocation = nextPct >= 75 ? `${destinationCity} outskirts` : nextPct >= 45 ? 'Transit Checkpoint' : originCity;
+    }
+
+    const nextEta = nextPct >= 100 ? 'Delivered' : nextPct >= 75 ? 'Today, 8:40 PM' : nextPct >= 45 ? 'Today, 7:10 PM' : nextPct >= 20 ? 'Today, 5:35 PM' : 'Today, 5:00 PM';
 
     setTracker({
       ...tracker,
@@ -78,7 +91,7 @@ export default function TrackingPage({ params }: { params: { id: string } }) {
           timestamp: 'Just now',
           status: nextPct >= 100 ? 'delivered' : nextPct >= 75 ? 'out_for_delivery' : nextPct >= 20 ? 'checkpoint' : 'in_transit',
           location: nextLocation,
-          note: nextPct >= 100 ? 'Proof of delivery recorded' : 'Driver update received via live tracking'
+          note: nextPct >= 100 ? 'Proof of delivery recorded and verified' : `Driver update received via live GPS tracking passing ${nextLocation}`
         }
       ]
     });

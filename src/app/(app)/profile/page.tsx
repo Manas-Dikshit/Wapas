@@ -12,11 +12,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 const staticDocuments = [
-  { name: 'GST Certificate', status: 'Verified' },
-  { name: 'PAN Card', status: 'Verified' },
-  { name: 'Vehicle RC — MH12 GT 4521', status: 'Verified' },
-  { name: 'Fitness Certificate', status: 'Expiring soon' },
-  { name: 'Driving License — Suresh Yadav', status: 'Pending' }
+  { name: 'GST Certificate (21AAACK1234F1Z8)', status: 'Verified' },
+  { name: 'PAN Card (AAACK1234F)', status: 'Verified' },
+  { name: 'Vehicle RC — OD05 K 3392 (Kalinga Heavy Haulage)', status: 'Verified' },
+  { name: 'Fitness Certificate — OD05 K 3392', status: 'Expiring soon' },
+  { name: 'Driving License — Subhashis Patnaik', status: 'Verified' },
+  { name: 'Vehicle RC — OD01 M 4420 (Chilika ColdChain)', status: 'Verified' }
 ];
 
 type DocType = 'gst' | 'pan' | 'rc' | 'fitness' | 'driving_license';

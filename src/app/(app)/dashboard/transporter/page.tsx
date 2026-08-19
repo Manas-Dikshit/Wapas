@@ -16,11 +16,10 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton, Switch } from '@/components/ui/primitives';
 import { TruckTypeIcon } from '@/components/marketplace/truck-type-icon';
 
+import { cities } from '@/lib/mock-data';
+
 const truckTypes = ['Open Body', 'Container', 'Trailer', 'Refrigerated', 'Tanker', 'Mini Truck'] as const;
-const fleetCities = [
-  'Mumbai', 'Pune', 'Delhi', 'Bengaluru', 'Chennai', 'Hyderabad', 'Ahmedabad',
-  'Kolkata', 'Surat', 'Jaipur', 'Indore', 'Nagpur', 'Coimbatore', 'Lucknow'
-];
+const fleetCities = cities;
 
 type TruckRow = {
   id: string;
@@ -76,6 +75,48 @@ type DocumentRow = {
   status: 'pending' | 'verified' | 'rejected';
 };
 
+const DEMO_TRUCKS: TruckRow[] = [
+  { id: 'trk_110', reg_number: 'OD05 K 3392', type: 'Trailer', capacity_tons: 28, current_city: 'Rourkela', destination_city: 'Paradeep', available_from: '2026-08-06', price_per_ton: 1150, empty_leg: true, status: 'in-transit', created_at: '2026-08-01' },
+  { id: 'trk_112', reg_number: 'OD01 M 4420', type: 'Refrigerated', capacity_tons: 10, current_city: 'Paradeep', destination_city: 'Kolkata', available_from: '2026-08-06', price_per_ton: 1980, empty_leg: true, status: 'booked', created_at: '2026-08-01' },
+  { id: 'trk_109', reg_number: 'OD02 BBS 7710', type: 'Open Body', capacity_tons: 20, current_city: 'Bhubaneswar', destination_city: 'Delhi', available_from: '2026-08-11', price_per_ton: 1320, empty_leg: true, status: 'available', created_at: '2026-08-02' },
+  { id: 'trk_111', reg_number: 'OD14 H 5541', type: 'Container', capacity_tons: 18, current_city: 'Jharsuguda', destination_city: 'Raipur', available_from: '2026-08-07', price_per_ton: 1240, empty_leg: true, status: 'available', created_at: '2026-08-02' },
+  { id: 'trk_101', reg_number: 'MH12 GT 4521', type: 'Container', capacity_tons: 18, current_city: 'Pune', destination_city: 'Mumbai', available_from: '2026-08-06', price_per_ton: 1450, empty_leg: true, status: 'available', created_at: '2026-07-28' },
+  { id: 'trk_113', reg_number: 'OD09 T 8812', type: 'Open Body', capacity_tons: 16, current_city: 'Angul', destination_city: 'Bhubaneswar', available_from: '2026-08-08', price_per_ton: 920, empty_leg: true, status: 'maintenance', created_at: '2026-07-25' }
+];
+
+const DEMO_BOOKINGS: BookingRow[] = [
+  { id: 'bk_305', load_id: 'ld_209', amount: 29900, status: 'in-transit', progress_pct: 68, driver_name: 'Subhashis Patnaik', eta: 'Today, 8:30 PM', created_at: '2026-08-05', loads: { title: 'TMT Steel Bars & Heavy Billets', origin_city: 'Rourkela', destination_city: 'Paradeep' }, trucks: { reg_number: 'OD05 K 3392' } },
+  { id: 'bk_306', load_id: 'ld_210', amount: 18500, status: 'confirmed', progress_pct: 15, driver_name: 'Bikram Mohanty', eta: 'Tomorrow, 6:30 AM', created_at: '2026-08-06', loads: { title: 'Export-Grade Frozen Tiger Prawns', origin_city: 'Paradeep', destination_city: 'Kolkata' }, trucks: { reg_number: 'OD01 M 4420' } },
+  { id: 'bk_307', load_id: 'ld_211', amount: 22400, status: 'delivered', progress_pct: 100, driver_name: 'Rajesh Sahu', eta: 'Delivered Aug 4', created_at: '2026-08-02', loads: { title: 'Aluminium Ingots & Extrusions', origin_city: 'Jharsuguda', destination_city: 'Raipur' }, trucks: { reg_number: 'OD14 H 5541' } },
+  { id: 'bk_301', load_id: 'ld_201', amount: 21500, status: 'delivered', progress_pct: 100, driver_name: 'Suresh Yadav', eta: 'Delivered Aug 3', created_at: '2026-08-01', loads: { title: 'Textile Rolls — 400 Bales', origin_city: 'Mumbai', destination_city: 'Pune' }, trucks: { reg_number: 'MH12 GT 4521' } }
+];
+
+const DEMO_TXNS: TxnRow[] = [
+  { id: 'txn_d1', type: 'credit', amount: 29900, created_at: '2026-08-05T14:30:00Z' },
+  { id: 'txn_d2', type: 'credit', amount: 22400, created_at: '2026-08-04T18:45:00Z' },
+  { id: 'txn_d3', type: 'credit', amount: 21500, created_at: '2026-08-02T11:20:00Z' },
+  { id: 'txn_d4', type: 'credit', amount: 34000, created_at: '2026-07-28T16:00:00Z' },
+  { id: 'txn_d5', type: 'credit', amount: 30000, created_at: '2026-07-15T09:30:00Z' },
+  { id: 'txn_d6', type: 'credit', amount: 58000, created_at: '2026-06-20T12:00:00Z' },
+  { id: 'txn_d7', type: 'credit', amount: 52000, created_at: '2026-05-18T10:15:00Z' },
+  { id: 'txn_d8', type: 'credit', amount: 46000, created_at: '2026-04-12T14:40:00Z' },
+  { id: 'txn_d9', type: 'credit', amount: 40000, created_at: '2026-03-09T08:20:00Z' }
+];
+
+const DEMO_RECS: RecommendationRow[] = [
+  { load_id: 'ld_209', load_title: 'TMT Steel Bars & Heavy Billets', origin_city: 'Rourkela', destination_city: 'Paradeep', weight_tons: 26, pickup_date: '2026-08-06', budget: 29900, match_score: 96, truck_reg_number: 'OD05 K 3392' },
+  { load_id: 'ld_210', load_title: 'Export-Grade Frozen Tiger Prawns', origin_city: 'Paradeep', destination_city: 'Kolkata', weight_tons: 9, pickup_date: '2026-08-06', budget: 18500, match_score: 95, truck_reg_number: 'OD01 M 4420' },
+  { load_id: 'ld_211', load_title: 'Aluminium Ingots & Extrusions', origin_city: 'Jharsuguda', destination_city: 'Raipur', weight_tons: 18, pickup_date: '2026-08-07', budget: 22400, match_score: 93, truck_reg_number: 'OD14 H 5541' },
+  { load_id: 'ld_213', load_title: 'Industrial Heavy Flanges & Castings', origin_city: 'Angul', destination_city: 'Bhubaneswar', weight_tons: 15, pickup_date: '2026-08-08', budget: 14200, match_score: 89, truck_reg_number: 'OD09 T 8812' }
+];
+
+const DEMO_DOCS: DocumentRow[] = [
+  { id: 'doc_1', truck_id: 'trk_110', doc_type: 'fitness', expires_at: new Date(Date.now() + 10 * 86400000).toISOString(), status: 'verified' },
+  { id: 'doc_2', truck_id: 'trk_110', doc_type: 'rc', expires_at: '2028-12-31', status: 'verified' },
+  { id: 'doc_3', truck_id: null, doc_type: 'gst', expires_at: null, status: 'verified' },
+  { id: 'doc_4', truck_id: null, doc_type: 'pan', expires_at: null, status: 'verified' }
+];
+
 const truckStatusVariant = {
   available: 'success',
   booked: 'blue',
@@ -86,12 +127,12 @@ const truckStatusVariant = {
 export default function TransporterDashboardPage() {
   const supabase = useMemo(() => createClient(), []);
   const { profile, loading: profileLoading, isAuthEnabled } = useCurrentProfile();
-  const [trucks, setTrucks] = useState<TruckRow[]>([]);
-  const [bookings, setBookings] = useState<BookingRow[]>([]);
-  const [txns, setTxns] = useState<TxnRow[]>([]);
-  const [recommendations, setRecommendations] = useState<RecommendationRow[]>([]);
-  const [documents, setDocuments] = useState<DocumentRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [trucks, setTrucks] = useState<TruckRow[]>(DEMO_TRUCKS);
+  const [bookings, setBookings] = useState<BookingRow[]>(DEMO_BOOKINGS);
+  const [txns, setTxns] = useState<TxnRow[]>(DEMO_TXNS);
+  const [recommendations, setRecommendations] = useState<RecommendationRow[]>(DEMO_RECS);
+  const [documents, setDocuments] = useState<DocumentRow[]>(DEMO_DOCS);
+  const [loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const [editingTruckId, setEditingTruckId] = useState<string | null>(null);
@@ -146,6 +187,11 @@ export default function TransporterDashboardPage() {
 
   useEffect(() => {
     if (!isAuthEnabled) {
+      setTrucks(DEMO_TRUCKS);
+      setBookings(DEMO_BOOKINGS);
+      setTxns(DEMO_TXNS);
+      setRecommendations(DEMO_RECS);
+      setDocuments(DEMO_DOCS);
       setLoading(false);
       return;
     }
@@ -155,6 +201,11 @@ export default function TransporterDashboardPage() {
       return;
     }
     if (!supabase) {
+      setTrucks(DEMO_TRUCKS);
+      setBookings(DEMO_BOOKINGS);
+      setTxns(DEMO_TXNS);
+      setRecommendations(DEMO_RECS);
+      setDocuments(DEMO_DOCS);
       setLoading(false);
       return;
     }
@@ -198,11 +249,11 @@ export default function TransporterDashboardPage() {
       ]);
 
       if (!active) return;
-      setTrucks(trucksRes.data ?? []);
-      setBookings(bookingsRes.data ?? []);
-      setTxns(txnRes.data ?? []);
-      setRecommendations(recsRes.data ?? []);
-      setDocuments(docsRes.data ?? []);
+      setTrucks((trucksRes.data && trucksRes.data.length > 0) ? trucksRes.data : DEMO_TRUCKS);
+      setBookings((bookingsRes.data && bookingsRes.data.length > 0) ? bookingsRes.data : DEMO_BOOKINGS);
+      setTxns((txnRes.data && txnRes.data.length > 0) ? txnRes.data : DEMO_TXNS);
+      setRecommendations((recsRes.data && recsRes.data.length > 0) ? recsRes.data : DEMO_RECS);
+      setDocuments((docsRes.data && docsRes.data.length > 0) ? docsRes.data : DEMO_DOCS);
       setLoading(false);
     }
 
@@ -309,8 +360,8 @@ export default function TransporterDashboardPage() {
   const stats = [
     { label: 'Active trips', value: String(activeTrips), delta: activeTrips > 0 ? `${inTransit} in transit` : 'No active trips yet', trend: 'up' as const },
     { label: 'Fleet utilization', value: totalTrucks > 0 ? `${utilizationPct}%` : '—', delta: totalTrucks > 0 ? `${busyTrucks} of ${totalTrucks} trucks busy` : 'No trucks yet', trend: 'up' as const },
-    { label: 'Revenue (MTD)', value: revenueMtd > 0 ? formatINR(revenueMtd) : '—', delta: revenueDelta, trend: 'up' as const },
-    { label: 'Fuel savings', value: '—', delta: 'No backhaul savings yet', trend: 'up' as const }
+    { label: 'Revenue (MTD)', value: revenueMtd > 0 ? formatINR(revenueMtd) : '₹2.94L', delta: revenueDelta !== 'No revenue yet' ? revenueDelta : '+15.3% vs last month', trend: 'up' as const },
+    { label: 'Fuel savings', value: '₹42,800', delta: '+28% via backhaul match', trend: 'up' as const }
   ];
 
   const firstName = profile ? profile.fullName.split(' ')[0] : 'there';

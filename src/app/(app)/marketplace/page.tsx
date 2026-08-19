@@ -181,13 +181,37 @@ export default function MarketplacePage() {
         }}
       />
 
-      <div className="scrollbar-none flex gap-3 overflow-x-auto pb-1">
-        {routeStats.map((r) => (
-          <div key={r.route} className="flex shrink-0 items-center gap-2 rounded-full border border-navy-100 bg-white px-4 py-2 text-xs font-semibold text-navy-500">
-            {r.route}
-            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600">-{r.savingsPct}%</span>
-          </div>
-        ))}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="scrollbar-none flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+          <span className="shrink-0 font-semibold text-navy-400">Popular Corridors:</span>
+          {routeStats.map((r) => {
+            const isSelected = query === r.route.split(' → ')[0] || query === r.route;
+            return (
+              <button
+                type="button"
+                key={r.route}
+                onClick={() => {
+                  if (isSelected) {
+                    setQuery('');
+                  } else {
+                    setQuery(r.route.split(' → ')[0]);
+                  }
+                }}
+                className={cn(
+                  'flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all',
+                  isSelected
+                    ? 'border-blue-500 bg-blue-50 text-blue-600 shadow-sm'
+                    : 'border-navy-100 bg-white text-navy-500 hover:border-navy-200 hover:bg-navy-50'
+                )}
+              >
+                <span>{r.route}</span>
+                <span className="rounded-full bg-emerald-50 px-1.5 py-0.2 text-[10px] font-bold text-emerald-600">
+                  -{r.savingsPct}%
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {results.length === 0 ? (

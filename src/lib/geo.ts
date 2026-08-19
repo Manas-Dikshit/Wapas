@@ -22,7 +22,24 @@ export const cityCoordinates: Record<string, LatLng> = {
   Nagpur: { lat: 21.1458, lng: 79.0882 },
   Coimbatore: { lat: 11.0168, lng: 76.9558 },
   Lucknow: { lat: 26.8467, lng: 80.9462 },
-  Nashik: { lat: 19.9975, lng: 73.7898 }
+  Nashik: { lat: 19.9975, lng: 73.7898 },
+  // Odisha region & key corridors
+  Bhubaneswar: { lat: 20.2961, lng: 85.8245 },
+  Cuttack: { lat: 20.4625, lng: 85.8828 },
+  Rourkela: { lat: 22.2604, lng: 84.8536 },
+  Paradeep: { lat: 20.3162, lng: 86.6114 },
+  Sambalpur: { lat: 21.4669, lng: 83.9812 },
+  Jharsuguda: { lat: 21.8554, lng: 84.0062 },
+  Angul: { lat: 20.8444, lng: 85.1011 },
+  Balasore: { lat: 21.4934, lng: 86.9135 },
+  Berhampur: { lat: 19.3150, lng: 84.7941 },
+  Jajpur: { lat: 20.8540, lng: 86.3333 },
+  Dhenkanal: { lat: 20.6667, lng: 85.6000 },
+  Bargarh: { lat: 21.3333, lng: 83.6167 },
+  Sundargarh: { lat: 22.1200, lng: 84.0300 },
+  Kharagpur: { lat: 22.3460, lng: 87.2320 },
+  Raipur: { lat: 21.2514, lng: 81.6296 },
+  Visakhapatnam: { lat: 17.6868, lng: 83.2185 }
 };
 
 /** Looks up a city by (case-insensitive, partial) name, e.g. "Mumbai" or "Mumbai, Maharashtra". */
