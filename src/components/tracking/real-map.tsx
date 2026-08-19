@@ -107,7 +107,7 @@ export function LiveTrackingMap({
   const destinationIcon = useMemo(() => createDotIcon('#4A7FCE'), []);
 
   return (
-    <div className="relative h-[260px] w-full overflow-hidden rounded-xl3 shadow-soft sm:h-[340px]">
+    <div className="relative h-[200px] w-full overflow-hidden rounded-xl3 shadow-soft sm:h-[300px]">
       <MapContainer
         center={[origin.lat, origin.lng]}
         zoom={7}
