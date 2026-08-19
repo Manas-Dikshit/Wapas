@@ -5,7 +5,7 @@ import { MapPin, Truck } from 'lucide-react';
 
 export function TrackingMap({ progressPct }: { progressPct: number }) {
   return (
-    <div className="relative h-[260px] w-full overflow-hidden rounded-xl3 bg-navy-600 sm:h-[340px]">
+    <div className="relative h-[200px] w-full overflow-hidden rounded-xl3 bg-navy-600 sm:h-[300px]">
       <div
         aria-hidden
         className="absolute inset-0 opacity-40"
