@@ -11,28 +11,28 @@ export function LoadCard({ load }: { load: Load }) {
   return (
     <div className="group card-surface flex flex-col p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-floating">
       <Link href={`/marketplace/${load.id}`} className="flex flex-1 flex-col">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-bold text-navy-600">{load.title}</p>
             <p className="text-xs text-navy-400">{load.shipperName}</p>
           </div>
-          <div className="flex shrink-0 gap-1.5">
+          <div className="flex flex-wrap shrink-0 gap-1.5">
             {load.trending && <Badge variant="warning"><Flame className="h-3 w-3" /> Trending</Badge>}
             {load.aiRecommended && <Badge variant="blue"><Sparkles className="h-3 w-3" /> AI pick</Badge>}
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-navy-500">
-          <MapPin className="h-4 w-4 text-blue-400" />
-          {load.originCity}
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-sm font-semibold text-navy-500">
+          <MapPin className="h-4 w-4 shrink-0 text-blue-400" />
+          <span>{load.originCity}</span>
           <span className="text-navy-300">→</span>
-          {load.destinationCity}
+          <span>{load.destinationCity}</span>
           <span className="ml-auto text-xs font-normal text-navy-300">{load.distanceKm} km</span>
         </div>
 
-        <div className="mt-4 flex items-center gap-4 text-xs text-navy-400">
-          <span className="flex items-center gap-1"><Weight className="h-3.5 w-3.5" /> {load.weightTons}T</span>
-          <span className="flex items-center gap-1"><TruckIcon className="h-3.5 w-3.5" /> {load.truckTypeNeeded}</span>
+        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-navy-400">
+          <span className="flex items-center gap-1"><Weight className="h-3.5 w-3.5 shrink-0" /> {load.weightTons}T</span>
+          <span className="flex items-center gap-1"><TruckIcon className="h-3.5 w-3.5 shrink-0" /> {load.truckTypeNeeded}</span>
           <span>Pickup {new Date(load.pickupDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
         </div>
 
@@ -54,10 +54,10 @@ export function TruckCard({ truck }: { truck: Truck }) {
     <div className="group relative flex flex-col card-surface p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-floating">
       <SaveTransporterButton transporterId={truck.transporterId} size="sm" className="absolute right-4 top-4 z-10" />
       <Link href={`/marketplace/${truck.id}`} className="flex flex-1 flex-col">
-        <div className="flex items-start justify-between gap-3 pr-8">
-          <div className="min-w-0">
+        <div className="flex flex-wrap items-start justify-between gap-2 pr-8">
+          <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-bold text-navy-600">{truck.type} · {truck.capacityTons}T</p>
-            <p className="text-xs text-navy-400">{truck.transporterName} · {truck.regNumber}</p>
+            <p className="truncate text-xs text-navy-400">{truck.transporterName} · {truck.regNumber}</p>
           </div>
           {truck.matchScore && (
             <div className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-center">
@@ -67,13 +67,15 @@ export function TruckCard({ truck }: { truck: Truck }) {
         </div>
 
         <div className="mt-4 flex items-center gap-3">
-          <TruckTypeIcon type={truck.type} className="h-8 w-12" />
-          <div className="flex flex-1 items-center gap-2 text-sm font-semibold text-navy-500">
-            <MapPin className="h-4 w-4 text-aqua-500" />
-            {truck.currentCity}
+          <TruckTypeIcon type={truck.type} className="h-8 w-12 shrink-0" />
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 text-sm font-semibold text-navy-500">
+            <span className="flex items-center gap-1">
+              <MapPin className="h-4 w-4 shrink-0 text-aqua-500" />
+              {truck.currentCity}
+            </span>
             <span className="text-navy-300">→</span>
-            {truck.destinationCity}
-            {truck.emptyLeg && <Badge variant="aqua" className="ml-1">Empty leg</Badge>}
+            <span>{truck.destinationCity}</span>
+            {truck.emptyLeg && <Badge variant="aqua" className="shrink-0">Empty leg</Badge>}
           </div>
         </div>
 
