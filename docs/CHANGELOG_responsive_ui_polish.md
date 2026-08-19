@@ -395,3 +395,30 @@ logic and `confirmPayment` timing are untouched.
 `npm run typecheck` and `npx next lint` both pass on the touched files. All six
 items are either JS-motion gated on `useReducedMotion()` or CSS-motion covered
 by the global `prefers-reduced-motion` rule — no reduced-motion regression.
+
+---
+
+## Shipper dashboard mobile-perfect pass
+
+Targeted mobile-first layout and CSS refinement across all shipper-facing screens for real device widths (**320px, 360px, 375px, 390px, 414px**).
+
+### Files touched and mobile issues fixed
+
+| File | Device Widths | Specific Issue & Fix |
+| --- | --- | --- |
+| `src/components/dashboard/stat-card.tsx` | 320px, 360px | In a 2-col grid at 320px, `p-5` left only ~96px content width causing large numbers (`₹12,34,567`) and labels (`Needs attention`) to cramp/wrap awkwardly. Updated container padding to `p-3.5 sm:p-5`, stepped down value typography to `text-lg sm:text-2xl`, and added `truncate` to labels and deltas. |
+| `src/app/(app)/dashboard/shipper/page.tsx` | 320px, 360px, 375px | Edit and cancel action buttons in open load items and unsave transporter buttons had sub-44px touch targets (32px/28px). Expanded touch targets to `h-11 w-11` (44x44px). Added `shrink-0` to price/badge columns and `truncate` to title/city names in saved transporter cards and recent bookings to prevent text collision. |
+| `src/components/marketplace/filter-bar.tsx` | 320px, 360px, 390px | Filter action controls ("Any city", "Any truck type", "More filters") were forced into a horizontal scroll row (`overflow-x-auto`) that felt cramped at 320px. Converted to a mobile-friendly 2-col grid (`grid grid-cols-2 gap-2 sm:flex sm:overflow-x-auto`), where city/type selects take 1 column each and "More filters" spans full width with a 44px (`h-11`) touch target. |
+| `src/components/marketplace/cards.tsx` | 320px, 360px | In `TruckCard`, origin/destination route text and `Empty leg` badges collided with `TruckTypeIcon` (48px) at 320px. Added `flex-wrap min-w-0` to route container so cities and badges wrap cleanly. In `LoadCard`, added `flex-wrap` and `min-w-0` to badge header (`Trending` / `AI pick`) and route distance indicators. |
+| `src/app/(app)/marketplace/[id]/page.tsx` | 320px, 360px | Page heading (`text-2xl`) and truck icon title row clipped at 320px. Adjusted title typography scale to `text-xl sm:text-2xl` and added `flex-wrap gap-2` to badge headers. |
+| `src/app/(app)/post-load/page.tsx` | 320px, 360px, 375px | Form field pairs (`Category & Weight`, `Origin & Destination`, `Pickup date & Budget`) used fixed 2-column grids (`grid-cols-2`) below `sm:`, creating cramped 116px inputs where select option text was clipped. Converted field grids to `grid-cols-1 sm:grid-cols-2`. Updated truck type selection buttons to `grid-cols-2 sm:grid-cols-3 md:grid-cols-6` with `min-h-[44px]` touch targets. |
+| `src/app/(app)/booking/[id]/page.tsx` | 320px, 360px | Payment option tiles (`PayOption`) now enforce `min-h-[44px]` touch targets. Added a dedicated insufficient wallet balance callout banner when wallet balance is less than required booking amount. Confirmation step buttons (`View all trips` / `Track shipment`) now stack cleanly on mobile (`flex flex-col sm:flex-row gap-3`). |
+| `src/app/(app)/bookings/page.tsx` | 320px, 360px | Trips list rows: added `shrink-0` to right-aligned price/ETA text column and `truncate` to route details so long titles don't push price text past card margins at 320px. |
+| `src/app/(app)/tracking/[id]/page.tsx` | 320px, 360px, 375px | Map container height (`h-[260px] sm:h-[340px]`) pushed driver & timeline info off-screen on ~640-780px tall phone viewports. Adjusted map & skeleton height to `h-[200px] sm:h-[300px]`. Expanded driver phone and chat action buttons to `h-11 w-11` (44x44px) touch targets. |
+| `src/components/tracking/real-map.tsx` & `map-placeholder.tsx` | 320px, 360px, 375px | Synchronized map container default heights to `h-[200px] sm:h-[300px]` matching tracking page layout. |
+| `src/app/(app)/wallet/page.tsx` | 320px, 360px | `SummaryTile` 3-col grid at 320px had `p-4` padding, leaving only 56px content width and clipping 6-digit currency figures (`₹1,25,000`). Updated padding to `p-2.5 sm:p-4`, stepped typography to `text-xs font-extrabold sm:text-sm`, and added `truncate`. Added `shrink-0` to escrow payout and transaction right-side amounts. |
+| `src/components/layout/app-shell.tsx` | 320px, 360px, 375px | Mobile topbar icon buttons (bell notification and hamburger menu) expanded from `h-10 w-10` to `h-11 w-11` (44x44px) hit areas. |
+
+### Verification
+- `npm run typecheck`: Passed (code 0).
+- `npx next lint`: Passed.
