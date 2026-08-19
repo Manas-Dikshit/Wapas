@@ -168,10 +168,10 @@ export default function WalletPage() {
 function SummaryTile({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: string; tone: 'up' | 'down' | 'neutral' }) {
   const color = tone === 'up' ? 'text-emerald-600 bg-emerald-50' : tone === 'down' ? 'text-red-500 bg-red-50' : 'text-blue-600 bg-blue-50';
   return (
-    <div className="card-surface p-4">
+    <div className="card-surface min-w-0 flex-1 p-2.5 sm:p-4">
       <div className={`flex h-8 w-8 items-center justify-center rounded-full ${color}`}>{icon}</div>
-      <p className="mt-3 text-xs text-navy-400">{label}</p>
-      <p className="text-sm font-bold text-navy-600">{value}</p>
+      <p className="mt-2 truncate text-xs font-semibold text-navy-400">{label}</p>
+      <p className="truncate text-xs font-extrabold text-navy-600 sm:text-sm">{value}</p>
     </div>
   );
 }
