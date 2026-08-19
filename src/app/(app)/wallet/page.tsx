@@ -107,12 +107,12 @@ export default function WalletPage() {
           <h3 className="mb-4 font-display text-base font-bold text-navy-600">Escrow payout status</h3>
           <div className="space-y-3">
             {bookings.filter((booking) => booking.escrow).map((booking) => (
-              <div key={booking.id} className="flex items-center justify-between rounded-2xl border border-navy-100 p-3.5">
-                <div>
-                  <p className="text-sm font-bold text-navy-600">{booking.loadTitle}</p>
-                  <p className="text-xs text-navy-400">{booking.route}</p>
+              <div key={booking.id} className="flex items-center justify-between gap-3 rounded-2xl border border-navy-100 p-3.5">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-navy-600">{booking.loadTitle}</p>
+                  <p className="truncate text-xs text-navy-400">{booking.route}</p>
                 </div>
-                <div className="text-right">
+                <div className="shrink-0 text-right">
                   <p className="text-sm font-bold text-navy-600">{formatINR((booking.escrow?.totalAmount ?? 0) - (booking.escrow?.releasedAmount ?? 0))}</p>
                   <p className="text-[11px] font-semibold text-blue-500">{booking.escrow?.status === 'released' ? 'Released' : 'Held in escrow'}</p>
                 </div>
@@ -142,15 +142,15 @@ export default function WalletPage() {
             <p className="px-5 py-4 text-sm text-navy-400 sm:px-6">No transactions yet.</p>
           ) : (
             txns.map((t) => (
-              <div key={t.id} className="flex items-center gap-4 px-5 py-4 sm:px-6">
+              <div key={t.id} className="flex items-center gap-3 px-5 py-4 sm:gap-4 sm:px-6">
                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${t.type === 'credit' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
                   {t.type === 'credit' ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold text-navy-600">{t.label}</p>
-                  <p className="text-xs text-navy-400">{t.date} · {t.method}</p>
+                  <p className="truncate text-xs text-navy-400">{t.date} · {t.method}</p>
                 </div>
-                <div className="text-right">
+                <div className="shrink-0 text-right">
                   <p className={`text-sm font-bold ${t.type === 'credit' ? 'text-emerald-600' : 'text-navy-600'}`}>
                     {t.type === 'credit' ? '+' : '-'}{formatINR(t.amount)}
                   </p>
