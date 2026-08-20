@@ -280,14 +280,14 @@ export default function ProfilePage() {
                     const opt = docOptions.find((o) => o.type === d.doc_type);
                     return (
                       <div key={d.id} className="flex items-center gap-3 rounded-2xl border border-navy-100 p-3.5">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-navy-50 text-navy-500">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-navy-50 text-navy-500">
                           <FileText className="h-4 w-4" />
                         </div>
-                        <p className="flex-1 text-sm font-semibold text-navy-600">{opt?.label ?? d.doc_type}</p>
+                        <p className="min-w-0 flex-1 truncate text-sm font-semibold text-navy-600">{opt?.label ?? d.doc_type}</p>
                         {d.expires_at && (
-                          <span className="text-[11px] text-navy-400">exp {new Date(d.expires_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                          <span className="shrink-0 text-[11px] text-navy-400">exp {new Date(d.expires_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
                         )}
-                        <Badge variant={docStatusVariant(d.status)}>{d.status}</Badge>
+                        <Badge variant={docStatusVariant(d.status)} className="shrink-0">{d.status}</Badge>
                       </div>
                     );
                   })}
@@ -332,7 +332,7 @@ export default function ProfilePage() {
                     />
                   </div>
                 </div>
-                <Button type="submit" disabled={uploadBusy || docsLoading}>
+                <Button type="submit" disabled={uploadBusy || docsLoading} className="h-11 w-full sm:w-auto">
                   {uploadBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                   {uploadBusy ? 'Uploading…' : 'Upload document'}
                 </Button>
@@ -343,11 +343,11 @@ export default function ProfilePage() {
               <div className="space-y-3">
                 {staticDocuments.map((d) => (
                   <div key={d.name} className="flex items-center gap-3 rounded-2xl border border-navy-100 p-3.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-navy-50 text-navy-500">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-navy-50 text-navy-500">
                       <FileText className="h-4 w-4" />
                     </div>
-                    <p className="flex-1 text-sm font-semibold text-navy-600">{d.name}</p>
-                    <Badge variant={d.status === 'Verified' ? 'success' : d.status === 'Pending' ? 'navy' : 'warning'}>{d.status}</Badge>
+                    <p className="min-w-0 flex-1 truncate text-sm font-semibold text-navy-600">{d.name}</p>
+                    <Badge variant={d.status === 'Verified' ? 'success' : d.status === 'Pending' ? 'navy' : 'warning'} className="shrink-0">{d.status}</Badge>
                   </div>
                 ))}
               </div>
