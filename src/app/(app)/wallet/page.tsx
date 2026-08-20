@@ -77,10 +77,10 @@ export default function WalletPage() {
         <div aria-hidden className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
         <p className="text-xs font-semibold text-white/60">Available balance</p>
         <p className="mt-2 font-display text-4xl font-extrabold">{formatINR(balance)}</p>
-        <div className="mt-6 flex gap-3">
+        <div className="mt-6 flex flex-wrap gap-3">
           <Button
             size="sm"
-            className="bg-white text-navy-600 hover:bg-white/90 shadow-none"
+            className="h-11 flex-1 bg-white text-navy-600 shadow-none hover:bg-white/90 sm:flex-initial"
             onClick={() => toast.success('Withdrawal initiated', { description: 'Funds will reach your bank in 1-2 business days.' })}
           >
             <ArrowDownLeft className="h-4 w-4" /> Withdraw
@@ -88,7 +88,7 @@ export default function WalletPage() {
           <Button
             size="sm"
             variant="outline"
-            className="border-white/30 bg-transparent text-white hover:bg-white/10"
+            className="h-11 flex-1 border-white/30 bg-transparent text-white hover:bg-white/10 sm:flex-initial"
             onClick={() => toast.success('Wallet top-up successful')}
           >
             <Plus className="h-4 w-4" /> Add funds
