@@ -523,13 +523,15 @@ export default function TransporterDashboardPage() {
       </div>
 
       {expiringDocs.length > 0 && (
-        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-          <div className="flex-1 text-sm text-amber-700">
-            <p className="font-bold">{expiringDocs.length} document{expiringDocs.length > 1 ? 's' : ''} expiring within 14 days.</p>
-            <p className="text-xs">Renew the fitness certificate / driving licence in Documents to keep your fleet active.</p>
+        <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+            <div className="text-sm text-amber-700">
+              <p className="font-bold">{expiringDocs.length} document{expiringDocs.length > 1 ? 's' : ''} expiring within 14 days.</p>
+              <p className="text-xs">Renew the fitness certificate / driving licence in Documents to keep your fleet active.</p>
+            </div>
           </div>
-          <Link href="/profile" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'shrink-0')}>
+          <Link href="/profile" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-11 w-full shrink-0 sm:w-auto')}>
             Manage documents
           </Link>
         </div>
@@ -545,12 +547,12 @@ export default function TransporterDashboardPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="card-surface lg:col-span-2">
-          <div className="flex items-center justify-between p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-5 sm:p-6">
             <div>
               <h3 className="font-display text-base font-bold text-navy-600">Revenue overview</h3>
               <p className="text-xs text-navy-400">Last 6 months</p>
             </div>
-            <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-600">
+            <span className="flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-600">
               <TrendingUp className="h-3.5 w-3.5" /> {hasRevenue ? revenueDelta : 'No revenue yet'}
             </span>
           </div>
@@ -593,7 +595,7 @@ export default function TransporterDashboardPage() {
             <p className="text-xs text-navy-400">{totalTrucks} truck{totalTrucks === 1 ? '' : 's'}</p>
           </div>
           {isTransporter && (
-            <Button variant="outline" size="sm" onClick={() => setShowTruckForm((v) => !v)}>
+            <Button variant="outline" size="sm" onClick={() => setShowTruckForm((v) => !v)} className="h-10">
               <Plus className="h-4 w-4" /> {showTruckForm ? 'Cancel' : 'Register truck'}
             </Button>
           )}
@@ -627,13 +629,13 @@ export default function TransporterDashboardPage() {
               <Input required type="number" min={0} placeholder="1450" value={truckForm.price_per_ton} onChange={(e) => setTruckForm({ ...truckForm, price_per_ton: e.target.value })} />
             </Field>
             <div className="flex items-end pb-2">
-              <label className="flex cursor-pointer items-center gap-2 text-sm font-bold text-navy-500">
+              <label className="flex min-h-[44px] cursor-pointer items-center gap-2 text-sm font-bold text-navy-500">
                 <Switch checked={truckForm.empty_leg} onCheckedChange={(v) => setTruckForm({ ...truckForm, empty_leg: v })} label="Empty leg" />
                 Empty leg
               </label>
             </div>
             <div className="sm:col-span-2">
-              <Button type="submit" size="sm" disabled={savingTruck}>
+              <Button type="submit" size="sm" className="h-11 w-full sm:w-auto" disabled={savingTruck}>
                 {savingTruck && <Loader2 className="h-4 w-4 animate-spin" />}
                 {savingTruck ? 'Registering…' : 'Register truck'}
               </Button>
@@ -689,56 +691,60 @@ export default function TransporterDashboardPage() {
                         <Input required type="number" min={0} value={editTruckForm.price_per_ton} onChange={(e) => setEditTruckForm({ ...editTruckForm, price_per_ton: e.target.value })} />
                       </Field>
                       <div className="flex items-end pb-2">
-                        <label className="flex cursor-pointer items-center gap-2 text-sm font-bold text-navy-500">
+                        <label className="flex min-h-[44px] cursor-pointer items-center gap-2 text-sm font-bold text-navy-500">
                           <Switch checked={editTruckForm.empty_leg} onCheckedChange={(v) => setEditTruckForm({ ...editTruckForm, empty_leg: v })} label="Empty leg" />
                           Empty leg
                         </label>
                       </div>
-                      <div className="flex justify-end gap-2 sm:col-span-2">
-                        <Button type="button" size="sm" variant="outline" onClick={() => setEditingTruckId(null)}>Cancel</Button>
-                        <Button type="submit" size="sm" disabled={mutationLoading}>
+                      <div className="flex gap-2 sm:col-span-2 sm:justify-end">
+                        <Button type="button" size="sm" variant="outline" onClick={() => setEditingTruckId(null)} className="h-11 flex-1 sm:flex-initial">Cancel</Button>
+                        <Button type="submit" size="sm" disabled={mutationLoading} className="h-11 flex-1 sm:flex-initial">
                           {mutationLoading ? 'Saving…' : 'Save changes'}
                         </Button>
                       </div>
                     </form>
                   ) : (
-                    <div className="flex items-center gap-4">
-                      <TruckTypeIcon type={t.type} className="h-9 w-14 shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate text-sm font-bold text-navy-600">{t.type} · {Number(t.capacity_tons)}T</p>
-                          {expiry && (
-                            <Badge variant="warning">
-                              {expiry.docType} expiring in {expiry.days} day{expiry.days === 1 ? '' : 's'}
-                            </Badge>
-                          )}
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <TruckTypeIcon type={t.type} className="h-9 w-14 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <p className="truncate text-sm font-bold text-navy-600">{t.type} · {Number(t.capacity_tons)}T</p>
+                            {expiry && (
+                              <Badge variant="warning" className="truncate">
+                                {expiry.docType} expiring in {expiry.days}d
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="truncate text-xs text-navy-400">{t.reg_number} · {t.current_city}{t.destination_city ? ` → ${t.destination_city}` : ''}</p>
                         </div>
-                        <p className="text-xs text-navy-400">{t.reg_number} · {t.current_city}{t.destination_city ? ` → ${t.destination_city}` : ''}</p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-navy-600">{formatINR(Number(t.price_per_ton))}<span className="text-xs font-normal text-navy-400">/ton</span></p>
-                        <Badge variant={truckStatusVariant[t.status]} className="mt-1">{t.status}</Badge>
-                      </div>
-                      <div className="flex shrink-0 flex-col gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => startEdit(t)}
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-navy-50 text-navy-500 hover:bg-navy-100"
-                          title="Edit truck"
-                          aria-label="Edit truck"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => deactivateTruck(t)}
-                          disabled={t.status !== 'available' || mutationLoading}
-                          className="flex h-8 w-8 items-center justify-center rounded-full text-navy-400 hover:bg-amber-50 hover:text-amber-500 disabled:cursor-not-allowed disabled:opacity-40"
-                          title={t.status === 'available' ? 'Deactivate (move to maintenance)' : 'Truck has an active trip — deactivate only when available'}
-                          aria-label="Deactivate truck"
-                        >
-                          <Power className="h-3.5 w-3.5" />
-                        </button>
+                      <div className="flex items-center justify-between gap-3 border-t border-navy-50 pt-2.5 sm:border-0 sm:pt-0 sm:justify-end">
+                        <div className="text-left sm:text-right">
+                          <p className="text-sm font-bold text-navy-600">{formatINR(Number(t.price_per_ton))}<span className="text-xs font-normal text-navy-400">/ton</span></p>
+                          <Badge variant={truckStatusVariant[t.status]} className="mt-0.5 sm:mt-1">{t.status}</Badge>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(t)}
+                            className="flex h-11 w-11 items-center justify-center rounded-full bg-navy-50 text-navy-500 transition-colors hover:bg-navy-100"
+                            title="Edit truck"
+                            aria-label="Edit truck"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deactivateTruck(t)}
+                            disabled={t.status !== 'available' || mutationLoading}
+                            className="flex h-11 w-11 items-center justify-center rounded-full text-navy-400 transition-colors hover:bg-amber-50 hover:text-amber-500 disabled:cursor-not-allowed disabled:opacity-40"
+                            title={t.status === 'available' ? 'Deactivate (move to maintenance)' : 'Truck has an active trip — deactivate only when available'}
+                            aria-label="Deactivate truck"
+                          >
+                            <Power className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -789,7 +795,7 @@ export default function TransporterDashboardPage() {
             <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4">
               <div className="mb-3 flex items-center justify-between gap-2">
                 <p className="text-sm font-bold text-navy-600">Accept load with which truck?</p>
-                <button onClick={() => { setAcceptingLoadId(null); setAcceptTruckId(''); setAcceptError(''); }} className="text-xs font-bold text-navy-400 hover:text-navy-600" aria-label="Cancel accept">
+                <button onClick={() => { setAcceptingLoadId(null); setAcceptTruckId(''); setAcceptError(''); }} className="flex min-h-[44px] min-w-[44px] items-center justify-center text-xs font-bold text-navy-400 hover:text-navy-600" aria-label="Cancel accept">
                   Cancel
                 </button>
               </div>
@@ -811,7 +817,7 @@ export default function TransporterDashboardPage() {
               )}
               {acceptError && <p className="mt-2 text-xs font-semibold text-red-500">{acceptError}</p>}
               {availableTrucks.length > 0 && (
-                <Button size="sm" className="mt-3 w-full" disabled={accepting || !acceptTruckId} onClick={() => {
+                <Button size="sm" className="mt-3 h-11 w-full" disabled={accepting || !acceptTruckId} onClick={() => {
                   const rec = recommendations.find((r) => r.load_id === acceptingLoadId);
                   if (rec) acceptLoad(rec);
                 }}>
@@ -832,10 +838,13 @@ export default function TransporterDashboardPage() {
           <p className="font-display text-base font-bold text-navy-600">Complete your KYC to unlock instant payouts</p>
           <p className="text-sm text-navy-400">GST and vehicle documents verified — 2 more documents pending.</p>
         </div>
-        <Link href="/profile" className={cn(buttonVariants({ size: 'sm' }))}>
+        <Link href="/profile" className={cn(buttonVariants({ size: 'sm' }), 'h-11 w-full sm:w-auto')}>
           Finish setup
         </Link>
       </div>
+    </div>
+  );
+}
     </div>
   );
 }
