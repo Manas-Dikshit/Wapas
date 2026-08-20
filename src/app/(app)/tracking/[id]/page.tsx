@@ -225,9 +225,9 @@ export default function TrackingPage({ params }: { params: { id: string } }) {
           <span>{tracker.progressPct}% complete</span>
           <span>Delivered</span>
         </div>
-        <div className="mt-4 flex items-center justify-between rounded-2xl border border-navy-100 bg-navy-50 px-3 py-2.5 text-[11px] text-navy-400">
-          <span>Last update: {tracker.updatedAt}</span>
-          <Button size="sm" variant="outline" onClick={advanceStatus}>Advance status</Button>
+        <div className="mt-4 flex items-center justify-between gap-2 rounded-2xl border border-navy-100 bg-navy-50 px-3 py-2.5 text-[11px] text-navy-400">
+          <span className="truncate">Last update: {tracker.updatedAt}</span>
+          <Button size="sm" variant="outline" onClick={advanceStatus} className="h-9 shrink-0">Advance status</Button>
         </div>
       </div>
 

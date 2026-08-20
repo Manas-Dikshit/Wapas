@@ -421,4 +421,25 @@ Targeted mobile-first layout and CSS refinement across all shipper-facing screen
 
 ### Verification
 - `npm run typecheck`: Passed (code 0).
+- `npx next lint`: Passed.
+
+---
+
+## Transporter dashboard mobile-perfect pass
+
+Targeted mobile-first layout and CSS refinement across all transporter-facing screens for real device widths (**320px, 360px, 375px, 390px, 414px**).
+
+### Files touched and mobile issues fixed
+
+| File | Device Widths | Specific Issue & Fix |
+| --- | --- | --- |
+| `src/app/(app)/dashboard/transporter/page.tsx` | 320px, 360px, 375px, 390px | Fleet row items forced reg-number, capacity, route, price, and status badges into a single row, squeezing text and clipping expiry badges. Converted row to a responsive mobile-first block (`flex flex-col gap-3 sm:flex-row sm:items-center`) with clear top/bottom sections and expanded Edit/Power icon button touch targets to `h-11 w-11` (44x44px). Expiring document alert banner now stacks on mobile (`flex-col sm:flex-row`). Add/edit truck form submit buttons and KYC setup promo button expanded to full-width (`w-full sm:w-auto`) with `h-11` touch targets. |
+| `src/components/dashboard/widgets.tsx` | 320px, 360px, 375px | In `RecentBookings`, "Start trip" and "Mark delivered" buttons had small sub-44px hit areas. Expanded touch targets to `min-h-[44px]` with `px-3 py-2` padding and added `truncate` to route details to prevent price text crowding at 320px. In `AiRecommendations`, expanded "Accept" button to `min-h-[44px]` with `px-3.5 py-2`. |
+| `src/app/(app)/profile/page.tsx` | 320px, 360px | In documents tab, long document titles (e.g. `Vehicle RC — MH12 GT 4521`) pushed status badges (`Verified`, `Expiring soon`, `Pending`) past card margins at 320px. Added `min-w-0 flex-1 truncate` to title paragraphs and `shrink-0` to status badges. Updated document upload button to `h-11 w-full sm:w-auto`. |
+| `src/app/(app)/wallet/page.tsx` | 320px, 360px | Available balance CTA buttons ("Withdraw" and "Add funds") expanded to `h-11 flex-1 sm:flex-initial` (44px height hit areas) for mobile touch compliance. |
+| `src/app/(app)/tracking/[id]/page.tsx` | 320px, 360px | Live tracking update control bar: added `truncate` to "Last update" timestamp text and `shrink-0` to "Advance status" button so text and button don't collide at 320px. |
+| `src/app/(app)/booking/[id]/page.tsx` | 320px, 360px | Escrow milestone rows: added `truncate` to milestone label and `shrink-0` to status/amount text to prevent line wrapping issues at 320px. |
+
+### Verification
+- `npm run typecheck`: Passed (code 0).
 - `npx next lint`: Passed.

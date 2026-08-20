@@ -46,21 +46,21 @@ export function RecentBookings({
       ) : (
         <div className="divide-y divide-navy-100">
           {items.slice(0, 4).map((b) => (
-            <div key={b.id} className="flex items-center gap-4 px-5 py-4 sm:px-6">
+            <div key={b.id} className="flex items-center gap-3 px-4 py-4 sm:gap-4 sm:px-6">
               <Link href={`/tracking/${b.id}`} className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-navy-600">{b.loadTitle}</p>
-                <p className="text-xs text-navy-400">{b.route}{b.vehicleNumber ? ` · ${b.vehicleNumber}` : ''}</p>
+                <p className="truncate text-xs text-navy-400">{b.route}{b.vehicleNumber ? ` · ${b.vehicleNumber}` : ''}</p>
                 {b.status === 'in-transit' && <Progress value={b.progressPct} className="mt-2 max-w-[160px]" />}
               </Link>
               <div className="flex shrink-0 flex-col items-end gap-1.5">
-                <Badge variant={statusVariant[b.status]} className="mt-1">
+                <Badge variant={statusVariant[b.status]}>
                   {b.status.replace('-', ' ')}
                 </Badge>
                 {onUpdateStatus && b.status === 'confirmed' && (
                   <button
                     type="button"
                     onClick={() => onUpdateStatus(b.id, 'in-transit')}
-                    className="rounded-full bg-aqua-50 px-2.5 py-1 text-[11px] font-bold text-aqua-600 hover:bg-aqua-100"
+                    className="flex min-h-[44px] items-center rounded-full bg-aqua-50 px-3 py-2 text-[11px] font-bold text-aqua-600 transition-colors hover:bg-aqua-100"
                   >
                     Start trip
                   </button>
@@ -69,13 +69,13 @@ export function RecentBookings({
                   <button
                     type="button"
                     onClick={() => onUpdateStatus(b.id, 'delivered')}
-                    className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-600 hover:bg-emerald-100"
+                    className="flex min-h-[44px] items-center rounded-full bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-600 transition-colors hover:bg-emerald-100"
                   >
                     Mark delivered
                   </button>
                 )}
               </div>
-              <div className="text-right">
+              <div className="shrink-0 text-right">
                 <p className="text-sm font-bold text-navy-600">{formatINR(b.amount)}</p>
               </div>
             </div>
@@ -134,7 +134,7 @@ export function AiRecommendations({
             >
               <Link href={`/marketplace/${l.id}`} className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-navy-600">{l.title}</p>
-                <p className="text-xs text-navy-400">{l.originCity} → {l.destinationCity} · {l.weightTons}T</p>
+                <p className="truncate text-xs text-navy-400">{l.originCity} → {l.destinationCity} · {l.weightTons}T</p>
               </Link>
               <div className="flex shrink-0 items-center gap-2 text-right">
                 <div>
@@ -145,7 +145,7 @@ export function AiRecommendations({
                   <button
                     type="button"
                     onClick={() => onAccept(l.id)}
-                    className="rounded-full bg-blue-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-blue-700"
+                    className="flex min-h-[44px] items-center rounded-full bg-blue-600 px-3.5 py-2 text-[11px] font-bold text-white transition-colors hover:bg-blue-700"
                   >
                     Accept
                   </button>

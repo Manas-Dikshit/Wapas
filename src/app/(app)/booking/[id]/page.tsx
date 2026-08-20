@@ -214,9 +214,9 @@ export default function BookingPage({ params }: { params: { id: string } }) {
             </div>
             <div className="mt-3 space-y-2">
               {escrow.milestones.map((milestone) => (
-                <div key={milestone.id} className="flex items-center justify-between rounded-xl bg-white/60 px-2.5 py-2 text-[11px]">
-                  <span className="text-navy-500">{milestone.label}</span>
-                  <span className={cn('font-bold', milestone.status === 'released' ? 'text-emerald-600' : 'text-navy-500')}>
+                <div key={milestone.id} className="flex items-center justify-between gap-2 rounded-xl bg-white/60 px-2.5 py-2 text-[11px]">
+                  <span className="truncate text-navy-500">{milestone.label}</span>
+                  <span className={cn('shrink-0 font-bold', milestone.status === 'released' ? 'text-emerald-600' : 'text-navy-500')}>
                     {milestone.status === 'released' ? 'Released' : 'Pending'} · {formatINR(milestone.amount)}
                   </span>
                 </div>
